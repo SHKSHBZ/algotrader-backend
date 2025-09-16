@@ -1,0 +1,37 @@
+# Hybrid Trading System Requirements (NO ML DEPENDENCIES REQUIRED)
+
+# Core data analysis
+pandas>=2.0.0
+numpy>=1.21.0
+
+# Technical analysis
+TA-Lib>=0.4.24
+
+# Data fetching
+requests>=2.28.0
+
+# Date/time utilities
+python-dateutil>=2.8.0
+
+# Broker integrations
+kiteconnect>=4.0.0    # For Zerodha API
+pyotp>=2.8.0          # For TOTP authentication
+# dhanhq>=1.0.0         # For Dhan API
+
+# Utilities
+PyYAML>=6.0.0          # For configuration files
+
+# System monitoring (optional)
+# psutil                 # For system resource monitoring
+
+# Note: This lightweight system does NOT require:
+# ❌ tensorflow (removed heavy ML dependency)
+# ❌ xgboost (removed heavy ML dependency) 
+# ❌ scikit-learn (removed heavy ML dependency)
+# ❌ torch/pytorch (not needed)
+# ❌ keras (not needed)
+# ❌ nvidia-ml-py3 (no GPU required)
+# ❌ CUDA toolkit (no GPU required)
+
+# 🎯 System now runs purely on CPU with rule-based logic!
+# 💡 Much faster startup, no training required, transparent decisions

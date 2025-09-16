@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Trading system outputs
+audit_logs/*.json
+daily_reports/*.json
+data_cache/*.csv
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+nul
+paper_*.done
+
+# Sensitive data
+config/credentials.yaml
+*.key
+*.secret

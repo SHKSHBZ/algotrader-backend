@@ -1,0 +1,353 @@
+{
+  "BANKING": {
+    "large_cap": [
+      "HDFCBANK",
+      "ICICIBANK",
+      "KOTAKBANK",
+      "AXISBANK",
+      "SBIN",
+      "INDUSINDBK"
+    ],
+    "mid_cap": [
+      "BANKBARODA",
+      "PNB",
+      "CANBK",
+      "UNIONBANK",
+      "IDFCFIRSTB",
+      "FEDERALBNK"
+    ],
+    "description": "Banking and Financial Services"
+  },
+  
+  "IT_SERVICES": {
+    "large_cap": [
+      "TCS",
+      "INFY",
+      "WIPRO",
+      "HCLTECH",
+      "TECHM",
+      "LTIM"
+    ],
+    "mid_cap": [
+      "MPHASIS",
+      "COFORGE",
+      "PERSISTENT",
+      "LTTS",
+      "MINDTREE",
+      "ROUTE"
+    ],
+    "description": "Information Technology and Software Services"
+  },
+  
+  "FINANCIALS_NBFC": {
+    "large_cap": [
+      "BAJFINANCE",
+      "BAJAJFINSV",
+      "HDFC",
+      "SBICARD",
+      "PGHH"
+    ],
+    "mid_cap": [
+      "CHOLAFIN",
+      "MANAPPURAM",
+      "MUTHOOTFIN",
+      "SHRIRAMFIN",
+      "ABCAPITAL"
+    ],
+    "description": "Non-Banking Financial Companies"
+  },
+  
+  "AUTOMOBILE": {
+    "large_cap": [
+      "MARUTI",
+      "TATAMOTORS",
+      "M&M",
+      "BAJAJ-AUTO",
+      "HEROMOTOCO",
+      "EICHERMOT"
+    ],
+    "mid_cap": [
+      "ASHOKLEY",
+      "BHARATFORG",
+      "MOTHERSON",
+      "BOSCHLTD",
+      "MRF",
+      "APOLLOTYRE"
+    ],
+    "description": "Automobile and Auto Components"
+  },
+  
+  "PHARMA": {
+    "large_cap": [
+      "SUNPHARMA",
+      "DRREDDY",
+      "CIPLA",
+      "DIVISLAB",
+      "APOLLOHOSP",
+      "TORNTPHARM"
+    ],
+    "mid_cap": [
+      "AUROPHARMA",
+      "LUPIN",
+      "BIOCON",
+      "ALKEM",
+      "GLENMARK",
+      "GRANULES"
+    ],
+    "description": "Pharmaceuticals and Healthcare"
+  },
+  
+  "FMCG": {
+    "large_cap": [
+      "HINDUNILVR",
+      "ITC",
+      "NESTLEIND",
+      "BRITANNIA",
+      "ASIANPAINT",
+      "PIDILITIND"
+    ],
+    "mid_cap": [
+      "GODREJCP",
+      "MARICO",
+      "DABUR",
+      "COLPAL",
+      "EMAMILTD",
+      "VBL"
+    ],
+    "description": "Fast Moving Consumer Goods"
+  },
+  
+  "OIL_GAS": {
+    "large_cap": [
+      "RELIANCE",
+      "ONGC",
+      "IOC",
+      "BPCL",
+      "GAIL",
+      "PETRONET"
+    ],
+    "mid_cap": [
+      "HINDPETRO",
+      "CASTROLIND",
+      "GSPL",
+      "MGL",
+      "IGL",
+      "ATGL"
+    ],
+    "description": "Oil, Gas and Petroleum"
+  },
+  
+  "METALS_MINING": {
+    "large_cap": [
+      "TATASTEEL",
+      "HINDALCO",
+      "JSWSTEEL",
+      "VEDL",
+      "NMDC",
+      "COALINDIA"
+    ],
+    "mid_cap": [
+      "SAIL",
+      "JINDALSTEL",
+      "NATIONALUM",
+      "HINDZINC",
+      "RATNAMANI",
+      "WELCORP"
+    ],
+    "description": "Metals and Mining"
+  },
+  
+  "CEMENT": {
+    "large_cap": [
+      "ULTRACEMCO",
+      "GRASIM",
+      "AMBUJACEM",
+      "ACC",
+      "SHREECEM",
+      "DALBHARAT"
+    ],
+    "mid_cap": [
+      "RAMCOCEM",
+      "BIRLACORPN",
+      "STARCEMENT",
+      "JKCEMENT",
+      "HEIDELBERG",
+      "JKLAKSHMI"
+    ],
+    "description": "Cement and Building Materials"
+  },
+  
+  "POWER": {
+    "large_cap": [
+      "POWERGRID",
+      "NTPC",
+      "ADANIGREEN",
+      "ADANIPOWER",
+      "TATAPOWER"
+    ],
+    "mid_cap": [
+      "TORNTPOWER",
+      "CESC",
+      "NHPC",
+      "SJVN",
+      "BOROSIL"
+    ],
+    "description": "Power Generation and Distribution"
+  },
+  
+  "TELECOM": {
+    "large_cap": [
+      "BHARTIARTL",
+      "JIO",
+      "IDEA"
+    ],
+    "mid_cap": [
+      "TTML",
+      "GTPL",
+      "RAILTEL"
+    ],
+    "description": "Telecommunications"
+  },
+  
+  "REALTY": {
+    "large_cap": [
+      "DLF",
+      "GODREJPROP",
+      "OBEROIRLTY",
+      "PHOENIXLTD"
+    ],
+    "mid_cap": [
+      "PRESTIGE",
+      "SOBHA",
+      "BRIGADE",
+      "MAHLIFE",
+      "KOLTEPATIL"
+    ],
+    "description": "Real Estate and Construction"
+  },
+  
+  "INFRASTRUCTURE": {
+    "large_cap": [
+      "LT",
+      "ADANIENT",
+      "ADANIPORTS",
+      "SIEMENS",
+      "ABB"
+    ],
+    "mid_cap": [
+      "KEC",
+      "NBCC",
+      "IRCON",
+      "AIAENG",
+      "ASTRAL"
+    ],
+    "description": "Infrastructure and Engineering"
+  },
+  
+  "CONSUMER_DURABLES": {
+    "large_cap": [
+      "TITAN",
+      "HAVELLS",
+      "VOLTAS",
+      "CROMPTON",
+      "BATAINDIA"
+    ],
+    "mid_cap": [
+      "DIXON",
+      "WHIRLPOOL",
+      "RAJESHEXPO",
+      "SYMPHONY",
+      "BLUESTARCO"
+    ],
+    "description": "Consumer Durables and Electronics"
+  },
+  
+  "RETAIL": {
+    "large_cap": [
+      "RELIANCE",
+      "DMART",
+      "TRENT",
+      "PAGEIND"
+    ],
+    "mid_cap": [
+      "SHOPERSTOP",
+      "VMART",
+      "ABFRL",
+      "RAYMOND"
+    ],
+    "description": "Retail and E-commerce"
+  },
+  
+  "INSURANCE": {
+    "large_cap": [
+      "HDFCLIFE",
+      "SBILIFE",
+      "ICICIPRULI",
+      "ICICIGI"
+    ],
+    "mid_cap": [
+      "MAXHEALTH",
+      "STARHEALTH",
+      "CARERATING"
+    ],
+    "description": "Insurance Companies"
+  },
+  
+  "CHEMICALS": {
+    "large_cap": [
+      "PIIND",
+      "ATUL",
+      "DEEPAKNTR"
+    ],
+    "mid_cap": [
+      "NAVINFLUOR",
+      "AARTI",
+      "ALKYLAMINE",
+      "CLEAN",
+      "FINEORG"
+    ],
+    "description": "Chemicals and Fertilizers"
+  },
+  
+  "TEXTILES": {
+    "large_cap": [
+      "PAGEIND",
+      "ARVIND"
+    ],
+    "mid_cap": [
+      "WELSPUNIND",
+      "VARDHACRLC",
+      "GARFIBRES",
+      "NIITLTD"
+    ],
+    "description": "Textiles and Apparel"
+  },
+  
+  "MEDIA_ENTERTAINMENT": {
+    "large_cap": [
+      "ZEEL",
+      "PVRINOX"
+    ],
+    "mid_cap": [
+      "SUNTV",
+      "TV18BRDCST",
+      "NETWORK18",
+      "SAREGAMA"
+    ],
+    "description": "Media and Entertainment"
+  },
+  
+  "LOGISTICS": {
+    "large_cap": [
+      "BLUEDART",
+      "CONCOR"
+    ],
+    "mid_cap": [
+      "VRL",
+      "MAHLOG",
+      "TCI",
+      "ALLCARGO"
+    ],
+    "description": "Logistics and Transportation"
+  }
+}
