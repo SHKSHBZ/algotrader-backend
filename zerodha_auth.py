@@ -17,6 +17,23 @@ from kiteconnect import KiteConnect
 IST = pytz.timezone('Asia/Kolkata')
 
 class ZerodhaAuth:
+    def auto_authenticate(self):
+        """
+        Automatically authenticate: use valid session if available, else prompt for login.
+        Returns True if authentication is successful, False otherwise.
+        """
+        # Load credentials
+        if not self.load_credentials():
+            print("No credentials found. Run setup first.")
+            if not self.setup_credentials():
+                return False
+        # Try to load session
+        if self.load_session():
+            print("✅ Using existing session (auto)")
+            return True
+        # If session missing/expired, do fresh login
+        print("Session expired or missing. Starting login...")
+        return self.fresh_login()
     """
     Handles all Zerodha authentication and session management
     """
@@ -105,25 +122,9 @@ class ZerodhaAuth:
     
     def authenticate(self):
         """
-        Complete authentication process
+        Complete authentication process (uses auto_authenticate)
         """
-        # Load credentials first
-        if not self.load_credentials():
-            choice = input("\n🔧 Setup credentials now? (y/n): ").strip().lower()
-            if choice == 'y':
-                if not self.setup_credentials():
-                    return False
-            else:
-                return False
-        
-        # Check for existing valid session
-        if self.load_session():
-            print("✅ Using existing session")
-            return True
-        
-        # Perform fresh authentication
-        print("\n🔄 Starting fresh authentication...")
-        return self.fresh_login()
+        return self.auto_authenticate()
     
     def fresh_login(self):
         """

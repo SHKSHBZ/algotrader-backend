@@ -8,6 +8,27 @@ env/
 venv/
 .venv/
 pip-log.txt
+
+# CRITICAL: Never commit sensitive files
+zerodha_config.json
+zerodha_session.json
+paper_trading_portfolio.json
+data_cache/
+
+# Node.js (React frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+build/
+dist/
 pip-delete-this-directory.txt
 .tox/
 .coverage
@@ -41,7 +62,14 @@ data_cache/*.csv
 nul
 paper_*.done
 
-# Sensitive data
+# Sensitive data - Zerodha credentials and trading data
+zerodha_config.json
+zerodha_session.json
+paper_trading_portfolio.json
 config/credentials.yaml
 *.key
 *.secret
+
+# Cache and data files
+data_cache/
+*.cache

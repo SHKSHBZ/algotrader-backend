@@ -463,18 +463,16 @@ class PerfectTraderPaperTrading:
                 last_date = datetime.fromisoformat(data['last_trading_date']).date()
                 
                 # Same day: restore exact state
-                if last_date == today:
-                    print(f"[RESTORE] Same-day portfolio from {data['session_end_time']}")
+                if last_date < today:
+                    print(f"[NEW DAY] Carrying over previous portfolio state (positions, cash, history)")
                     self.initial_capital = data['initial_capital']
                     self.capital = data['capital']
                     self.available_capital = data['available_capital']
                     self.positions = data['positions']
                     self.trade_history = data['trade_history']
-                    self.total_trades = data['total_trades']
-                    self.winning_trades = data['winning_trades']
-                    
-                    # Show portfolio status
-                    total_value = self.available_capital
+                    self.total_trades = data.get('total_trades', 0)
+                    self.winning_trades = data.get('winning_trades', 0)
+                    return
                     for symbol, pos in self.positions.items():
                         total_value += pos['shares'] * pos['avg_price']  # Approximate
                     
@@ -614,68 +612,26 @@ class PerfectTraderPaperTrading:
         market_open = self.live_api.is_market_open() if self.live_api else self._is_market_open_basic()
         
         # Try live data first if market is open
-        if market_open:
-            if self.use_live_data and self.live_api:
-                # Zerodha API path
-                cache_key = symbol
-                now = datetime.now()
-                
-                if (cache_key in self.price_cache and 
-                    cache_key in self.last_cache_update and
-                    (now - self.last_cache_update[cache_key]).seconds < 30):  # 30 sec cache
-                    price = self.price_cache[cache_key]
-                    print(f"[CACHE] {symbol}: Rs.{price:.2f} (30s cache)")
-                else:
-                    # Get fresh live price - CRITICAL for accuracy
-                    live_price = self.live_api.get_live_price(symbol)
-                    if live_price > 0:
-                        price = live_price
-                        self.price_cache[cache_key] = price
-                        self.last_cache_update[cache_key] = now
-                    else:
-                        print(f"[ERROR] Failed to get live price for {symbol}, using cached data")
-                        price = 0  # Will fallback to cached data below
-            else:
-                # No Zerodha API, skip live data during market hours
-                print(f"[INFO] No Zerodha API available for {symbol}")
-                price = 0  # Will fallback to cached data below
-        
-        # If still no price and market closed, warn about stale data usage
-        elif not market_open and not self.use_live_data:
-            print(f"[INFO] Market closed, using cached data for {symbol}")
-        
-        # Fallback to cached data
-        if price <= 0:
-            price = self._get_cached_price(symbol)
-        
-        # Add realistic trading friction
-        if add_slippage and price > 0:
-            price = self._apply_trading_friction(price, symbol)
-        
-        return price
-    
-    def _get_cached_price(self, symbol: str) -> float:
-        """Get price from cached data with freshness check"""
         try:
-            cache_file = Path('data_cache') / symbol / '15min.csv'
-            if cache_file.exists():
-                data = pd.read_csv(cache_file, index_col='datetime', parse_dates=True)
-                if not data.empty:
-                    # Check data freshness
-                    latest_timestamp = data.index[-1]
-                    now = datetime.now(IST)
-                    age_hours = (now - latest_timestamp).total_seconds() / 3600
-                    
-                    if age_hours > 24:
-                        print(f"[CRITICAL] {symbol} cache data is {age_hours:.1f} hours old!")
-                        print(f"[CRITICAL] Last update: {latest_timestamp}")
-                        print(f"[CRITICAL] Data too stale for trading - REJECTING")
-                        return 0  # Don't trade with stale data
-                    
-                    return data['close'].iloc[-1]
-        except:
-            pass
-        return 0
+            if market_open:
+                if self.use_live_data and self.live_api:
+                    # Zerodha API path
+                    cache_key = symbol
+                    now = datetime.now()
+                    if (cache_key in self.price_cache and 
+                        cache_key in self.last_cache_update and
+                        (now - self.last_cache_update[cache_key]).seconds < 30):  # 30 sec cache
+                        price = self.price_cache[cache_key]
+                        print(f"[CACHE] {symbol}: Rs.{price:.2f} (30s cache)")
+                    else:
+                        # Get fresh live price - CRITICAL for accuracy
+                        live_price = self.live_api.get_live_price(symbol)
+                        if live_price > 0:
+                            price = live_price
+                            self.price_cache[cache_key] = price
+                            self.last_cache_update[cache_key] = now
+        except Exception:
+            return 0
     
     def _apply_trading_friction(self, price: float, symbol: str) -> float:
         """Apply realistic slippage and bid-ask spread"""
