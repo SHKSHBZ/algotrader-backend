@@ -1,4 +1,4 @@
-# Hybrid Trading System Requirements (NO ML DEPENDENCIES REQUIRED)
+# AlgoTrader Backend Requirements
 
 # Core data analysis
 pandas>=2.0.0
@@ -7,16 +7,19 @@ numpy>=1.21.0
 # Technical analysis
 TA-Lib>=0.4.24
 
-# Data fetching
+# Data fetching and HTTP
 requests>=2.28.0
 
 # Date/time utilities
 python-dateutil>=2.8.0
 
+# Web API framework
+Flask>=2.3.0
+Flask-CORS>=4.0.0
+
 # Broker integrations
 kiteconnect>=4.0.0    # For Zerodha API
 pyotp>=2.8.0          # For TOTP authentication
-# dhanhq>=1.0.0         # For Dhan API
 
 # Utilities
 PyYAML>=6.0.0          # For configuration files

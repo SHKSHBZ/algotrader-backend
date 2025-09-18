@@ -1,8 +1,19 @@
-# 🚀 Perfect Trader - Paper Trading Bot
+# 🚀 AlgoTrader Backend
 
-A clean, focused paper trading system using MTFA (Multi-Timeframe Analysis) strategy with Zerodha integration.
+A comprehensive algorithmic trading system backend with Zerodha integration, MTFA strategy implementation, and RESTful API for portfolio management.
 
-## 📁 Directory Structure
+## 📋 Features
+
+- **Multi-Timeframe Analysis (MTFA)** trading strategy
+- **Paper Trading** simulation with portfolio tracking
+- **Zerodha API Integration** for live market data and authentication
+- **RESTful API** for portfolio data and trading metrics
+- **Real-time Price Updates** and volume tracking
+- **Automated Data Management** with caching system
+
+## 🏗️ Architecture
+
+### Core Components
 
 ```
 Perfect_Trader/

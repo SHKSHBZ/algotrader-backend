@@ -41,6 +41,8 @@ class ZerodhaLiveAPI:
         self.instruments = {}  # symbol -> instrument_token mapping
         self.rate_limit_count = 0
         self.last_rate_limit_reset = datetime.now()
+        self.config_file = Path('zerodha_config.json')
+        self.session_file = Path('zerodha_session.json')
     
     @classmethod
     def setup_config(cls, api_key: str, api_secret: str):
