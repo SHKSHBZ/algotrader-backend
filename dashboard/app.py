@@ -1,4 +1,5 @@
 
+import os
 from flask import Flask, render_template, jsonify, request
 from flask_cors import CORS
 import json
@@ -9,7 +10,19 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from paper_trading import ZerodhaLiveAPI
 
 app = Flask(__name__)
-CORS(app, origins=['http://localhost:5173'])  # React dev server
+
+# Production-ready CORS configuration
+if os.getenv('FLASK_ENV') == 'production':
+    # Add your production domain here
+    CORS(app, origins=[
+        'https://inditehealthcare.com',  # Your actual domain
+        'https://www.inditehealthcare.com',  # Your actual domain
+        'http://inditehealthcare.com',   # HTTP fallback
+        'http://www.inditehealthcare.com'  # HTTP fallback
+    ])
+else:
+    # Development CORS
+    CORS(app, origins=['http://localhost:5173'])  # React dev server
 
 PORTFOLIO_FILE = Path(__file__).parent.parent / 'paper_trading_portfolio.json'
 
@@ -306,16 +319,33 @@ def internal_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == '__main__':
+    # Environment configuration
+    is_production = os.getenv('FLASK_ENV') == 'production'
+    port = int(os.getenv('PORT', 5000))
+    host = '0.0.0.0' if is_production else '127.0.0.1'
+    debug_mode = not is_production
+    
     # Add CORS headers for all requests
     @app.after_request
     def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        if is_production:
+            # Production CORS headers
+            response.headers.add('Access-Control-Allow-Origin', 'https://inditehealthcare.com')  # Your domain
+            response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+            response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        else:
+            # Development CORS headers
+            response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
+            response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+            response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         return response
     
-    print("🚀 AlgoTrader Backend API Server Starting...")
-    print("📊 Frontend URL: http://localhost:5173")
-    print("🔗 Backend API: http://localhost:5000")
+    if is_production:
+        print("🚀 AlgoTrader Backend API Server Starting (Production Mode)...")
+        print(f"🔗 Backend API: Running on port {port}")
+    else:
+        print("🚀 AlgoTrader Backend API Server Starting (Development Mode)...")
+        print("📊 Frontend URL: http://localhost:5173")
+        print("🔗 Backend API: http://localhost:5000")
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host=host, port=port, debug=debug_mode)

@@ -1,0 +1,18 @@
+[Unit]
+Description=AlgoTrader Flask API
+After=network.target
+
+[Service]
+Type=exec
+User=your-username
+Group=your-username
+WorkingDirectory=/var/www/algotrader
+Environment=PATH=/var/www/algotrader/venv/bin
+Environment=FLASK_ENV=production
+ExecStart=/var/www/algotrader/venv/bin/gunicorn --workers 2 --bind 127.0.0.1:5000 wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+# Production requirements - add gunicorn for better production server
+flask==2.3.3
+flask-cors==4.0.0
+requests==2.31.0
+pandas==2.1.1
+numpy==1.24.3
+gunicorn==21.2.0
+python-dotenv==1.0.0
+
+# Zerodha/Trading requirements (add any specific versions you need)
+kiteconnect
+# Add any other requirements your trading code needs
