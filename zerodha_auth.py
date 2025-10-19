@@ -336,6 +336,15 @@ class ZerodhaAuth:
         """
         if self.kite and self.access_token:
             return self.kite
+        
+        # Load credentials if not already loaded
+        if not self.api_key:
+            self.load_credentials()
+        
+        # Try to load existing session
+        if self.load_session():
+            return self.kite
+            
         return None
 
 

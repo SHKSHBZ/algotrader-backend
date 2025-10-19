@@ -1,7 +1,7 @@
 {
   "api_key": "wxsju8klw8nxi9d9",
   "api_secret": "ni01uqeigc32ovhyjczj1h65p0np0c9f",
-  "created_at": "2025-09-18T12:12:00.762350",
+  "created_at": "2025-10-16T00:00:00.000000",
   "instructions": {
     "usage": "This file stores your Zerodha API credentials",
     "get_credentials": "Get your API key and secret from https://kite.trade/",

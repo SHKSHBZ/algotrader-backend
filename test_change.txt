@@ -1,3 +1,0 @@
-This is a test file to demonstrate git workflow.
-Created on: 2025-10-13
-Purpose: Learn how to push changes to GitHub
