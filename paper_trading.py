@@ -384,14 +384,27 @@ class PerfectTraderPaperTrading:
     Complete paper trading system with MTFA strategy
     """
     
-    def __init__(self, initial_capital: float = 250000, use_live_data: bool = True, force_fresh_start: bool = False):
+    def __init__(self, initial_capital: float = 250000, use_live_data: bool = True, force_fresh_start: bool = False,
+                 dry_run: bool = False, allow_after_hours: bool = False):
         # Live data configuration
         self.use_live_data = use_live_data
         self.live_api = None
         self.price_cache = {}  # Cache recent prices to reduce API calls
         self.last_cache_update = {}
-        
-        # Initialize live API if requested (now handled by main() authentication)
+
+        # Trading mode controls
+        self.enable_trading = not dry_run  # can be overridden by market-hours logic
+        self.dry_run_configured = dry_run
+        self.allow_after_hours = allow_after_hours
+
+        # Initialize base portfolio defaults BEFORE loading saved state
+        self.initial_capital = initial_capital
+        self.capital = initial_capital
+        self.available_capital = initial_capital
+        self.positions = {}
+        self.trade_history = []
+
+    # Initialize live API if requested (now handled by main() authentication)
         if use_live_data:
             try:
                 print(f"[LIVE] Initializing Zerodha connection...")
@@ -414,16 +427,8 @@ class PerfectTraderPaperTrading:
         # Store the force_fresh_start flag
         self.force_fresh_start = force_fresh_start
         
-        # Load existing portfolio or start fresh
+        # Load existing portfolio (if available) to override defaults
         self._load_portfolio_state()
-        
-        # If no existing portfolio, use initial capital
-        if not hasattr(self, 'initial_capital'):
-            self.initial_capital = initial_capital
-            self.capital = initial_capital
-            self.available_capital = initial_capital
-            self.positions = {}
-            self.trade_history = []
         
         # Load config
         with open('hybrid_config.json', 'r') as f:
@@ -516,19 +521,10 @@ class PerfectTraderPaperTrading:
                     print(f"[POSITIONS] Open: {len(self.positions)}")
                     return
                 
-                # New day: start with yesterday's end balance but no positions
+                # New day: carry forward positions and cash (no auto reset)
                 elif last_date < today:
-                    end_balance = data.get('end_of_day_balance', data['available_capital'])
-                    print(f"[NEW DAY] Starting with yesterday's end balance")
-                    print(f"[BALANCE] Previous day end: Rs.{end_balance:,.0f}")
-                    
-                    self.initial_capital = end_balance  # Yesterday's end becomes today's start
-                    self.capital = end_balance
-                    self.available_capital = end_balance
-                    self.positions = {}  # No overnight positions in paper trading
-                    self.trade_history = []  # Fresh trade history for new day
-                    self.total_trades = 0
-                    self.winning_trades = 0
+                    print(f"[NEW DAY] Carrying forward portfolio and positions from previous session")
+                    print(f"[BALANCE] Carried cash: Rs.{self.available_capital:,.0f} | Positions: {len(self.positions)}")
                     return
                     
             except Exception as e:
@@ -538,6 +534,12 @@ class PerfectTraderPaperTrading:
     def _save_portfolio_state(self, is_end_of_day=False):
         """Save current portfolio state for persistence"""
         try:
+            # In dry-run mode, avoid overwriting a real portfolio with an empty snapshot
+            if getattr(self, 'dry_run_configured', False):
+                if not self.positions and self.available_capital == self.initial_capital:
+                    print("[DRY-RUN] Skipping portfolio save (no positions, full cash)")
+                    return
+
             # Calculate total portfolio value
             total_value = self.available_capital
             for symbol, position in self.positions.items():
@@ -559,6 +561,15 @@ class PerfectTraderPaperTrading:
                 'end_of_day_balance': total_value if is_end_of_day else self.available_capital
             }
             
+            # Backup current file (if exists) with timestamp for recovery
+            try:
+                if self.portfolio_file.exists():
+                    ts = datetime.now(IST).strftime('%Y%m%d_%H%M%S')
+                    backup = self.portfolio_file.with_name(f"paper_trading_portfolio_{ts}.json.bak")
+                    backup.write_text(self.portfolio_file.read_text(encoding='utf-8'), encoding='utf-8')
+            except Exception:
+                pass
+
             with open(self.portfolio_file, 'w') as f:
                 json.dump(state, f, indent=2, default=str)
             
@@ -726,6 +737,9 @@ class PerfectTraderPaperTrading:
     
     def execute_buy(self, symbol: str, signal_result: dict):
         """Execute virtual buy order"""
+        if not self.enable_trading:
+            print(f"[DRY-RUN] BUY skipped for {symbol}")
+            return False
         if len(self.positions) >= self.max_positions:
             return False
         
@@ -775,6 +789,11 @@ class PerfectTraderPaperTrading:
         
         print(f"[BUY] {symbol} - {shares} shares @ Rs.{entry_price:.2f}")
         print(f"   Stop: Rs.{stop_loss:.2f}, Target: Rs.{target:.2f}")
+        # Persist immediately to treat account as original
+        try:
+            self._save_portfolio_state(is_end_of_day=False)
+        except Exception:
+            pass
         
         return True
     
@@ -816,6 +835,9 @@ class PerfectTraderPaperTrading:
     
     def execute_sell(self, symbol: str, price: float, reason: str):
         """Execute virtual sell order"""
+        if not self.enable_trading:
+            print(f"[DRY-RUN] SELL skipped for {symbol} [{reason}]")
+            return False
         if symbol not in self.positions:
             return False
             
@@ -847,6 +869,11 @@ class PerfectTraderPaperTrading:
         })
         
         del self.positions[symbol]
+        # Persist immediately to treat account as original
+        try:
+            self._save_portfolio_state(is_end_of_day=False)
+        except Exception:
+            pass
         return True
     
     def scan_and_trade(self):
@@ -1103,17 +1130,26 @@ class PerfectTraderPaperTrading:
             next_open = now_ist.replace(hour=9, minute=15, second=0, microsecond=0)
             if now_ist.hour >= 15:  # After market close, next day
                 next_open += timedelta(days=1)
-                
+
             print(f"\n[X] MARKET IS CLOSED")
             print(f"   Current time: {now_ist.strftime('%H:%M:%S IST')}")
             print(f"   Market hours: 9:15 AM - 3:30 PM IST (Mon-Fri)")
             print(f"   Next open: {next_open.strftime('%Y-%m-%d %H:%M IST')}")
-            print("\n[INFO] Running anyway for demo purposes...")
+
+            if self.allow_after_hours:
+                print("\n[INFO] After-hours run enabled: DRY-RUN mode (no orders)")
+                self.enable_trading = False
+            else:
+                print("\n[INFO] Exiting. Use --allow-after-hours for dry-run or --dry-run for scans without orders.")
+                return
         else:
             remaining_minutes = self._time_until_market_close()
             print(f"\n[+] MARKET IS OPEN")
             print(f"   Current time: {now_ist.strftime('%H:%M:%S IST')}")
             print(f"   Market closes in: {remaining_minutes:.0f} minutes")
+            if self.dry_run_configured:
+                print("[INFO] DRY-RUN enabled: scans only, no orders will be placed")
+                self.enable_trading = False
         
         # Check data
         cache_dir = Path('data_cache')
@@ -1320,6 +1356,23 @@ def main():
     print(f"[TIME] Started at: {datetime.now(IST).strftime('%Y-%m-%d %H:%M:%S')} IST")
     print("=" * 60)
     
+    # CLI args
+    run_hours = 4.0
+    dry_run = False
+    allow_after_hours = False
+    try:
+        import argparse
+        parser = argparse.ArgumentParser(description='Perfect Trader - Paper Trading')
+        parser.add_argument('--hours', type=float, default=4.0, help='Run duration in hours (default: 4.0)')
+        parser.add_argument('--dry-run', action='store_true', help='Scan only, do not place orders')
+        parser.add_argument('--allow-after-hours', action='store_true', help='Allow running after market close (dry-run only)')
+        args = parser.parse_args()
+        run_hours = float(args.hours)
+        dry_run = bool(args.dry_run)
+        allow_after_hours = bool(args.allow_after_hours)
+    except Exception:
+        pass
+
     # Step 1: Auto-authenticate Zerodha session
     auth_success = auto_authenticate_zerodha()
     
@@ -1342,11 +1395,13 @@ def main():
     engine = PerfectTraderPaperTrading(
         initial_capital=250000,
         use_live_data=use_live,
-        force_fresh_start=False  # Don't reset portfolio every time
+        force_fresh_start=False,  # Don't reset portfolio every time
+        dry_run=dry_run,
+        allow_after_hours=allow_after_hours
     )
     
     # Start trading
-    engine.run(hours=4.0)
+    engine.run(hours=run_hours)
 
 
 if __name__ == "__main__":
