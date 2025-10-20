@@ -26,6 +26,9 @@ class EnhancedHybridDataLoader:
         self.kite = None
         self.auth = ZerodhaAuth()
         self.symbol_map = self._load_symbol_map()
+        # Instruments cache (reduce heavy API calls and enable robust matching)
+        self._instruments_cache_path = Path('instruments_nse.json')
+        self._instruments = None  # Loaded on demand
         
     def _load_symbol_map(self):
         """Load NSE symbol mappings for Zerodha"""
@@ -79,7 +82,15 @@ class EnhancedHybridDataLoader:
             'SIEMENS': 'SIEMENS',
             'TITAN': 'TITAN',
             'DIVISLAB': 'DIVISLAB',
-            'BAJAJFINSV': 'BAJAJFINSV'
+            'BAJAJFINSV': 'BAJAJFINSV',
+            # Frequently requested recent listings and fin services
+            # Note: ZOMATO renamed to ETERNAL on the exchange; keep alias here
+            'ZOMATO': 'ETERNAL',
+            'ETERNAL': 'ETERNAL',
+            'NYKAA': 'NYKAA',
+            'PAYTM': 'PAYTM',
+            'HDFCAMC': 'HDFCAMC',
+            'TATAMOTORS': 'TATAMOTORS'
         }
     
     def _ensure_authenticated(self):
@@ -100,6 +111,46 @@ class EnhancedHybridDataLoader:
                 print(f"[ERROR] Zerodha authentication failed: {e}")
                 print("[TIP] Run: python authenticate_zerodha.py")
                 raise Exception(f"Zerodha authentication required: {e}")
+
+    def _load_instruments_cache(self):
+        """Load instruments from local cache if available"""
+        try:
+            if self._instruments_cache_path.exists():
+                data = json.load(self._instruments_cache_path.open('r', encoding='utf-8'))
+                if isinstance(data, list) and data:
+                    self._instruments = data
+        except Exception as e:
+            logging.debug(f"[INSTRUMENTS] Failed to load cache: {e}")
+
+    def _save_instruments_cache(self, instruments: list):
+        """Persist instruments to local cache"""
+        try:
+            json.dump(instruments, self._instruments_cache_path.open('w', encoding='utf-8'), ensure_ascii=False)
+        except Exception as e:
+            logging.debug(f"[INSTRUMENTS] Failed to save cache: {e}")
+
+    def _get_all_instruments(self) -> list:
+        """Fetch NSE instruments once and cache them for faster lookup"""
+        if self._instruments is not None:
+            return self._instruments
+        # Try load cache first
+        self._load_instruments_cache()
+        if self._instruments is not None:
+            return self._instruments
+        # Fallback to API
+        try:
+            self._ensure_authenticated()
+            instruments = self.kite.instruments("NSE")
+            # Basic validation
+            if isinstance(instruments, list) and instruments:
+                self._instruments = instruments
+                self._save_instruments_cache(instruments)
+                return instruments
+        except Exception as e:
+            logging.error(f"[INSTRUMENTS] Failed to fetch instruments from API: {e}")
+        # As a last resort, return empty list
+        self._instruments = []
+        return self._instruments
     
     def get_historical_data(self, symbol: str, period: str, interval: str) -> pd.DataFrame:
         """
@@ -179,30 +230,54 @@ class EnhancedHybridDataLoader:
             raise Exception(f"Data download failed for {symbol}: {e}")
     
     def _get_instrument_token(self, symbol: str) -> int:
-        """Get instrument token for a symbol"""
+        """Get instrument token for a symbol with robust matching and caching"""
         try:
-            # Get all instruments
-            instruments = self.kite.instruments("NSE")
-            
-            # Find the instrument
-            for instrument in instruments:
-                if instrument['tradingsymbol'] == symbol:
-                    return instrument['instrument_token']
-            
-            # If exact match not found, try with -EQ suffix
-            eq_symbol = f"{symbol}-EQ" if not symbol.endswith("-EQ") else symbol
-            for instrument in instruments:
-                if instrument['tradingsymbol'] == eq_symbol:
-                    return instrument['instrument_token']
-            
-            # Still not found, try fuzzy matching
-            for instrument in instruments:
-                if instrument['name'].upper().replace(' ', '') == symbol.upper().replace('-', '').replace(' ', ''):
-                    return instrument['instrument_token']
-            
+            instruments = self._get_all_instruments()
+            if not instruments:
+                logging.error("[INSTRUMENTS] Empty instruments list; cannot resolve token")
+                return None
+
+            sym = symbol.upper()
+            sym_eq = sym if sym.endswith('-EQ') else f"{sym}-EQ"
+
+            # 1) Exact tradingsymbol match
+            for ins in instruments:
+                ts = ins.get('tradingsymbol', '').upper()
+                if ts == sym:
+                    return ins.get('instrument_token')
+
+            # 2) Try -EQ series match
+            for ins in instruments:
+                ts = ins.get('tradingsymbol', '').upper()
+                if ts == sym_eq:
+                    return ins.get('instrument_token')
+
+            # 3) Fuzzy match against name (remove spaces and hyphens)
+            target = sym.replace('-', '').replace(' ', '')
+            for ins in instruments:
+                name = str(ins.get('name', '')).upper().replace(' ', '').replace('-', '')
+                if name == target:
+                    return ins.get('instrument_token')
+
+            # 4) Startswith match on tradingsymbol as a last resort
+            for ins in instruments:
+                ts = ins.get('tradingsymbol', '').upper()
+                if ts.startswith(sym):
+                    return ins.get('instrument_token')
+
+            # If still not found, try refresh instruments once
+            logging.warning(f"[INSTRUMENTS] Token not found for {symbol}. Refreshing cache and retrying...")
+            # Force refresh
+            self._instruments = None
+            instruments = self._get_all_instruments()
+            for ins in instruments:
+                ts = ins.get('tradingsymbol', '').upper()
+                if ts in (sym, sym_eq):
+                    return ins.get('instrument_token')
+
             logging.error(f"[ERROR] Could not find instrument token for {symbol}")
             return None
-            
+
         except Exception as e:
             logging.error(f"[ERROR] Error getting instrument token for {symbol}: {e}")
             return None

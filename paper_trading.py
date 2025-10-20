@@ -446,6 +446,38 @@ class PerfectTraderPaperTrading:
         
         # Try to load MTFA strategy
         self.strategy = self._load_strategy()
+
+        # Scan counter persistence
+        self.scan_counter_file = Path('scan_counter.json')
+        self.session_scan_count = 0
+
+    def _load_scan_counter(self) -> dict:
+        """Load or initialize the daily scan counter (per local IST day)."""
+        today = datetime.now(IST).date().isoformat()
+        try:
+            if self.scan_counter_file.exists():
+                data = json.load(self.scan_counter_file.open('r', encoding='utf-8'))
+                # Reset if date changed
+                if data.get('date') != today:
+                    data = {'date': today, 'count': 0}
+            else:
+                data = {'date': today, 'count': 0}
+        except Exception:
+            data = {'date': today, 'count': 0}
+        return data
+
+    def _save_scan_counter(self, data: dict):
+        try:
+            json.dump(data, self.scan_counter_file.open('w', encoding='utf-8'), indent=2)
+        except Exception:
+            pass
+
+    def _increment_daily_scan_counter(self) -> int:
+        """Increment and return today's scan count (persistent)."""
+        data = self._load_scan_counter()
+        data['count'] = int(data.get('count', 0)) + 1
+        self._save_scan_counter(data)
+        return data['count']
     
     def _load_portfolio_state(self):
         """Load portfolio state from persistence files"""
@@ -608,32 +640,54 @@ class PerfectTraderPaperTrading:
     
     def get_current_price(self, symbol: str, add_slippage: bool = False):
         """Get current price with live data and realistic trading friction"""
-        price = 0
+        price = 0.0
         
         # FORCE live data during market hours (critical for accuracy)
         market_open = self.live_api.is_market_open() if self.live_api else self._is_market_open_basic()
         
         # Try live data first if market is open
         try:
-            if market_open:
-                if self.use_live_data and self.live_api:
-                    # Zerodha API path
-                    cache_key = symbol
-                    now = datetime.now()
-                    if (cache_key in self.price_cache and 
-                        cache_key in self.last_cache_update and
-                        (now - self.last_cache_update[cache_key]).seconds < 30):  # 30 sec cache
-                        price = self.price_cache[cache_key]
-                        print(f"[CACHE] {symbol}: Rs.{price:.2f} (30s cache)")
-                    else:
-                        # Get fresh live price - CRITICAL for accuracy
-                        live_price = self.live_api.get_live_price(symbol)
-                        if live_price > 0:
-                            price = live_price
-                            self.price_cache[cache_key] = price
-                            self.last_cache_update[cache_key] = now
+            if market_open and self.use_live_data and self.live_api:
+                # Zerodha API path
+                cache_key = symbol
+                now = datetime.now()
+                if (
+                    cache_key in self.price_cache and
+                    cache_key in self.last_cache_update and
+                    (now - self.last_cache_update[cache_key]).seconds < 30
+                ):
+                    price = float(self.price_cache[cache_key])
+                    print(f"[CACHE] {symbol}: Rs.{price:.2f} (30s cache)")
+                else:
+                    # Get fresh live price - CRITICAL for accuracy
+                    live_price = self.live_api.get_live_price(symbol)
+                    if live_price > 0:
+                        price = float(live_price)
+                        self.price_cache[cache_key] = price
+                        self.last_cache_update[cache_key] = now
         except Exception:
+            # ignore and fallback
+            price = 0.0
+
+        # Fallback: use latest cached 15min close if live not available
+        if price <= 0:
+            try:
+                cache_file = Path('data_cache') / symbol / '15min.csv'
+                if cache_file.exists():
+                    data = pd.read_csv(cache_file, index_col='datetime', parse_dates=True)
+                    if not data.empty and 'close' in data.columns:
+                        price = float(data['close'].iloc[-1])
+            except Exception:
+                pass
+
+        # If still not available, return 0
+        if price <= 0:
             return 0
+
+        # Apply trading friction if requested
+        if add_slippage:
+            return self._apply_trading_friction(price, symbol)
+        return round(price, 2)
     
     def _apply_trading_friction(self, price: float, symbol: str) -> float:
         """Apply realistic slippage and bid-ask spread"""
@@ -1042,7 +1096,9 @@ class PerfectTraderPaperTrading:
         try:
             while datetime.now(IST) < end_time:
                 scan_count += 1
-                print(f"\n[SCAN] #{scan_count}")
+                # Increment persistent daily counter
+                today_count = self._increment_daily_scan_counter()
+                print(f"\n[SCAN] #{scan_count} | Today: {today_count}")
                 
                 # Check if market just closed during session
                 if self._is_market_open() and datetime.now(IST) >= self._get_market_close_time():
