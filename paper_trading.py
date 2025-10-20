@@ -28,6 +28,7 @@ from urllib.parse import urlparse, parse_qs
 from kiteconnect import KiteConnect
 import hashlib
 from zerodha_auth import ZerodhaAuth
+from reports import reporting
 
 IST = pytz.timezone('Asia/Kolkata')
 
@@ -850,12 +851,16 @@ class PerfectTraderPaperTrading:
     
     def scan_and_trade(self):
         """Scan market and execute trades"""
-        print(f"\n[SCAN] MARKET SCAN - {datetime.now(IST).strftime('%H:%M:%S')}")
+        scan_start = datetime.now(IST)
+        print(f"\n[SCAN] MARKET SCAN - {scan_start.strftime('%H:%M:%S')}")
         print(f"   Strategy: {'MTFA' if self.strategy else 'Simple SMA'}")
         print("-" * 50)
         
         signals_found = 0
         buy_opportunities = []
+        actions_log = []
+        price_fallbacks = []
+        errors = []
         
         # Update trailing stops for existing positions first
         if self.positions:
@@ -887,11 +892,21 @@ class PerfectTraderPaperTrading:
                     
                     # Check stop/target
                     if current_price <= position['stop_loss']:
-                        self.execute_sell(symbol, current_price, 'STOP')
+                        if self.execute_sell(symbol, current_price, 'STOP'):
+                            actions_log.append({
+                                'type': 'SELL', 'symbol': symbol, 'qty': position['shares'],
+                                'price_used': round(current_price, 2), 'source': 'live_or_cache',
+                                'reason': 'STOP', 'sl': position['stop_loss'], 'tp': position['target']
+                            })
                         signals_found += 1
                         print("STOP LOSS")
                     elif current_price >= position['target']:
-                        self.execute_sell(symbol, current_price, 'TARGET')
+                        if self.execute_sell(symbol, current_price, 'TARGET'):
+                            actions_log.append({
+                                'type': 'SELL', 'symbol': symbol, 'qty': position['shares'],
+                                'price_used': round(current_price, 2), 'source': 'live_or_cache',
+                                'reason': 'TARGET', 'sl': position['stop_loss'], 'tp': position['target']
+                            })
                         signals_found += 1
                         print("TARGET HIT")
                     else:
@@ -918,8 +933,35 @@ class PerfectTraderPaperTrading:
         buy_opportunities.sort(key=lambda x: x[2], reverse=True)
         for symbol, signal_result, score in buy_opportunities[:3]:
             if self.execute_buy(symbol, signal_result):
+                actions_log.append({
+                    'type': 'BUY', 'symbol': symbol,
+                    'qty': self.positions.get(symbol, {}).get('shares', 0),
+                    'price_used': self.positions.get(symbol, {}).get('entry_price', 0),
+                    'source': 'live_or_cache_slippage',
+                    'reason': 'MTFA',
+                    'sl': self.positions.get(symbol, {}).get('stop_loss', 0),
+                    'tp': self.positions.get(symbol, {}).get('target', 0)
+                })
                 signals_found += 1
                 
+        scan_end = datetime.now(IST)
+        # Write per-scan report
+        try:
+            payload = {
+                'timestamp_ist': scan_start.isoformat(),
+                'watchlist_size': len(self.watchlist),
+                'candidates': [s for (s, _, _) in buy_opportunities],
+                'actions': actions_log,
+                'price_fallbacks': price_fallbacks,
+                'errors': errors,
+                'durations_ms': {
+                    'scan_total': int((scan_end - scan_start).total_seconds() * 1000)
+                }
+            }
+            reporting.write_scan_audit(payload)
+        except Exception:
+            pass
+
         if signals_found == 0 and not self.positions:
             print("\n⚪ No trading opportunities found")
     
@@ -1105,7 +1147,32 @@ class PerfectTraderPaperTrading:
                     print("\n[!] MARKET CLOSED - Ending session")
                     break
                 
+                scan_before = datetime.now(IST)
                 self.scan_and_trade()
+                scan_after = datetime.now(IST)
+
+                # Update rolling daily summary
+                try:
+                    # Portfolio snapshot basics
+                    total_value = self.available_capital
+                    for s, pos in self.positions.items():
+                        price = self.get_current_price(s)
+                        if price > 0:
+                            total_value += pos['shares'] * price
+                    daily_update = {
+                        'date_ist': datetime.now(IST).date().isoformat(),
+                        'scans_today': today_count,
+                        'trades_placed': self.total_trades,
+                        'portfolio_snapshot': {
+                            'positions': len(self.positions),
+                            'gross_exposure': round(total_value - self.available_capital, 2),
+                            'cash': round(self.available_capital, 2)
+                        },
+                        'unrealized_pnl': round(total_value - self.initial_capital, 2),
+                    }
+                    reporting.upsert_daily_summary(daily_update)
+                except Exception:
+                    pass
                 self.print_status()
                 
                 # Show time until market close if market is open
