@@ -1,0 +1,56 @@
+{
+  "last_trading_date": "2025-10-21T13:19:21.654591+05:30",
+  "session_end_time": "2025-10-21 13:19:21",
+  "initial_capital": 250000,
+  "capital": 250000,
+  "available_capital": 49616.33259999999,
+  "positions": {
+    "HUDCO": {
+      "entry_time": "2025-10-21T13:09:13.360648+05:30",
+      "entry_price": 229.05,
+      "shares": 444,
+      "stop_loss": 223.42,
+      "original_stop_loss": 223.42,
+      "target": 235.66,
+      "score": 79.27,
+      "trailing_stop_enabled": true,
+      "trailing_stop_percent": 0.02,
+      "activation_percent": 0.015,
+      "highest_price": 229.05,
+      "trailing_activated": false
+    },
+    "HINDPETRO": {
+      "entry_time": "2025-10-21T13:09:13.463909+05:30",
+      "entry_price": 454.4,
+      "shares": 181,
+      "stop_loss": 446.23,
+      "original_stop_loss": 446.23,
+      "target": 467.62,
+      "score": 76.89,
+      "trailing_stop_enabled": true,
+      "trailing_stop_percent": 0.02,
+      "activation_percent": 0.015,
+      "highest_price": 454.4,
+      "trailing_activated": false
+    },
+    "APOLLOHOSP": {
+      "entry_time": "2025-10-21T13:19:21.569018+05:30",
+      "entry_price": 8019.55,
+      "shares": 2,
+      "stop_loss": 7759.59,
+      "original_stop_loss": 7759.59,
+      "target": 8253.91,
+      "score": 76.71,
+      "trailing_stop_enabled": true,
+      "trailing_stop_percent": 0.02,
+      "activation_percent": 0.015,
+      "highest_price": 8019.55,
+      "trailing_activated": false
+    }
+  },
+  "trade_history": [],
+  "total_trades": 3,
+  "winning_trades": 0,
+  "total_portfolio_value": 249404.5326,
+  "end_of_day_balance": 49616.33259999999
+}
