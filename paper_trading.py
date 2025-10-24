@@ -1099,6 +1099,11 @@ class PerfectTraderPaperTrading:
         """Run paper trading session"""
         print("[BOT] PERFECT TRADER - PAPER TRADING")
         print("=" * 50)
+        # Show an opening summary of the last saved state before starting scans
+        try:
+            self._print_opening_summary()
+        except Exception:
+            pass
         
         # Calculate current portfolio value
         total_value = self.available_capital
@@ -1261,6 +1266,56 @@ class PerfectTraderPaperTrading:
                     print(f"   ✅ Good performance! Consider live testing.")
                 else:
                     print(f"   [WARNING] Review strategy before live trading.")
+
+    def _print_opening_summary(self):
+        """Print past-day capital balance and holdings before the first scan.
+        Uses the last saved portfolio snapshot without fetching live prices."""
+        try:
+            state_file = self.portfolio_file if hasattr(self, 'portfolio_file') else Path('paper_trading_portfolio.json')
+            if not state_file.exists():
+                print("[OPENING] No prior portfolio state found")
+                return
+            with open(state_file, 'r', encoding='utf-8') as f:
+                state = json.load(f)
+
+            last_dt = None
+            try:
+                last_dt = datetime.fromisoformat(state.get('last_trading_date', ''))
+            except Exception:
+                last_dt = None
+            today = datetime.now(IST).date()
+            last_date = (last_dt.astimezone(IST).date() if isinstance(last_dt, datetime) else today)
+
+            # Prefer saved total_portfolio_value if present; else approximate from entries
+            total_value = state.get('total_portfolio_value')
+            if total_value is None:
+                total_value = float(state.get('available_capital', 0))
+                for sym, pos in state.get('positions', {}).items():
+                    entry_price = pos.get('entry_price', pos.get('avg_price', 0))
+                    qty = pos.get('shares', pos.get('qty', 0))
+                    if entry_price and qty:
+                        total_value += qty * entry_price
+
+            cash = float(state.get('available_capital', 0))
+            positions = state.get('positions', {}) or {}
+            pos_count = len(positions)
+
+            # Determine label based on whether it's a new day
+            label = "Previous day" if last_date < today else "Current session"
+            when = (last_dt.astimezone(IST).strftime('%Y-%m-%d %H:%M IST') if isinstance(last_dt, datetime) else "unknown time")
+
+            print(f"[OPENING] {label} snapshot ({when})")
+            print(f"   Closing/Last Value: Rs.{total_value:,.0f}")
+            print(f"   Cash: Rs.{cash:,.0f} | Positions: {pos_count}")
+
+            if pos_count:
+                print(f"\n[HOLDINGS] As last saved (symbol | qty | entry)")
+                for sym, pos in positions.items():
+                    qty = pos.get('shares', pos.get('qty', 0))
+                    entry = pos.get('entry_price', pos.get('avg_price', 0))
+                    print(f"   {sym:<12} | {int(qty):>4} | Rs.{float(entry):>7.2f}")
+        except Exception:
+            print("[OPENING] Unable to read prior portfolio snapshot")
 
 
 def auto_update_data():
