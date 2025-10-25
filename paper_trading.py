@@ -565,7 +565,10 @@ class PerfectTraderPaperTrading:
             try:
                 if self.portfolio_file.exists():
                     ts = datetime.now(IST).strftime('%Y%m%d_%H%M%S')
-                    backup = self.portfolio_file.with_name(f"paper_trading_portfolio_{ts}.json.bak")
+                    # Save backup files to Reports Day Trading folder
+                    reports_dir = Path('Reports Day Trading')
+                    reports_dir.mkdir(exist_ok=True)  # Ensure directory exists
+                    backup = reports_dir / f"paper_trading_portfolio_{ts}.json.bak"
                     backup.write_text(self.portfolio_file.read_text(encoding='utf-8'), encoding='utf-8')
             except Exception:
                 pass
