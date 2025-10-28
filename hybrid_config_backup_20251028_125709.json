@@ -1,0 +1,544 @@
+{
+  "watchlist": [
+    "RELIANCE",
+    "TCS",
+    "HDFCBANK",
+    "HINDUNILVR",
+    "KOTAKBANK",
+    "ITC",
+    "AXISBANK",
+    "INFY",
+    "HCLTECH",
+    "MARUTI",
+    "SUNPHARMA",
+    "BHARTIARTL",
+    "NTPC",
+    "POWERGRID",
+    "COALINDIA",
+    "ULTRACEMCO",
+    "SBIN",
+    "ONGC",
+    "ASIANPAINT",
+    "NESTLEIND",
+    "TATASTEEL",
+    "HINDALCO",
+    "JSWSTEEL",
+    "GRASIM",
+    "TECHM",
+    "DRREDDY",
+    "CIPLA",
+    "BAJFINANCE",
+    "BAJAJFINSV",
+    "ICICIBANK",
+    "WIPRO",
+    "LT",
+    "ADANIENT",
+    "BRITANNIA",
+    "DIVISLAB",
+    "PAGEIND",
+    "DABUR",
+    "MARICO",
+    "BIOCON",
+    "CADILAHC",
+    "MOTHERSUMI",
+    "ASHOKLEY",
+    "LUPIN",
+    "BOSCHLTD",
+    "MRF",
+    "SIEMENS",
+    "TITAN",
+    "BAJAJ-AUTO",
+    "GODREJCP",
+    "PIDILITIND",
+    "BANDHANBNK",
+    "TORNTPHARM",
+    "UBL",
+    "INDIGO",
+    "ADANIPORTS",
+    "BANKBARODA",
+    "PNB",
+    "FEDERALBNK",
+    "IDFCFIRSTB",
+    "INDUSINDBK",
+    "LICHSGFIN",
+    "CHOLAFIN",
+    "CANFINHOME",
+    "MPHASIS",
+    "COFORGE",
+    "LTTS",
+    "PERSISTENT",
+    "MINDTREE",
+    "ROUTE",
+    "APOLLOHOSP",
+    "RBLBANK",
+    "EQUITAS",
+    "UJJIVAN",
+    "CREDITACC",
+    "SRTRANSFIN",
+    "M&MFIN",
+    "MAHINDCIE",
+    "MCDOWELL-N",
+    "AUROPHARMA",
+    "GRANULES",
+    "THERMAX",
+    "HAVELLS",
+    "BERGEPAINT",
+    "VOLTAS",
+    "BEL",
+    "BHEL",
+    "CONCOR",
+    "SJVN",
+    "NHPC",
+    "NMDC",
+    "VEDL",
+    "SAIL",
+    "JSWENERGY",
+    "RECLTD",
+    "PFC",
+    "IOC",
+    "BPCL",
+    "HINDPETRO",
+    "GAIL",
+    "HUDCO",
+    "NYKAA",
+    "PAYTM",
+    "ZOMATO",
+    "HDFCAMC",
+    "TATAMOTORS"
+  ],
+  "max_positions": 20,
+  "watchlist_breakdown": {
+    "large_cap": 35,
+    "mid_cap": 35,
+    "small_cap": 35,
+    "total": 105,
+    "note": "First 35 = Large Cap, Next 35 = Mid Cap, Last 35 = Small Cap"
+  },
+  "sector_mapping": {
+    "RELIANCE": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "TCS": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "HDFCBANK": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "HINDUNILVR": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "KOTAKBANK": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "ITC": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "AXISBANK": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "INFY": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "HCLTECH": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "MARUTI": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "SUNPHARMA": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BHARTIARTL": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "NTPC": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "POWERGRID": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "COALINDIA": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "ULTRACEMCO": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "SBIN": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "ONGC": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "ASIANPAINT": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "NESTLEIND": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "TATASTEEL": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "HINDALCO": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "JSWSTEEL": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "GRASIM": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "TECHM": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "DRREDDY": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "CIPLA": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BAJFINANCE": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BAJAJFINSV": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "ICICIBANK": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "WIPRO": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "LT": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "ADANIENT": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BRITANNIA": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "DIVISLAB": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "PAGEIND": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "DABUR": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "MARICO": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BIOCON": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "CADILAHC": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "MOTHERSUMI": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "ASHOKLEY": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "LUPIN": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BOSCHLTD": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "MRF": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "SIEMENS": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "TITAN": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BAJAJ-AUTO": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "GODREJCP": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "PIDILITIND": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BANDHANBNK": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "TORNTPHARM": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "UBL": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "INDIGO": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "ADANIPORTS": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BANKBARODA": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "PNB": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "FEDERALBNK": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "IDFCFIRSTB": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "INDUSINDBK": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "LICHSGFIN": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "CHOLAFIN": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "CANFINHOME": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "MPHASIS": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "COFORGE": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "LTTS": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "PERSISTENT": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "MINDTREE": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "ROUTE": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "APOLLOHOSP": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "RBLBANK": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "EQUITAS": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "UJJIVAN": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "CREDITACC": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "SRTRANSFIN": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "M&MFIN": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "MAHINDCIE": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "MCDOWELL-N": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "AUROPHARMA": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "GRANULES": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "THERMAX": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "HAVELLS": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BERGEPAINT": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "VOLTAS": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BEL": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BHEL": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "CONCOR": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "SJVN": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "NHPC": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "NMDC": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "VEDL": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "SAIL": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "JSWENERGY": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "RECLTD": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "PFC": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "IOC": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "BPCL": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "HINDPETRO": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "GAIL": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "HUDCO": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "NYKAA": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "PAYTM": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "ZOMATO": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "HDFCAMC": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    },
+    "TATAMOTORS": {
+      "sector": "UNKNOWN",
+      "market_cap": "UNKNOWN"
+    }
+  },
+  "watchlist_metadata": {
+    "last_validated": "2025-10-28T10:53:18.441466+05:30",
+    "source": "hybrid_config.json",
+    "symbol_count": 105
+  }
+}

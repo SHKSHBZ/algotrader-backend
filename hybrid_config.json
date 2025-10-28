@@ -1,32 +1,936 @@
 {
   "watchlist": [
-    "RELIANCE", "TCS", "HDFCBANK", "HINDUNILVR", "KOTAKBANK", "ITC", "AXISBANK", 
-    "INFY", "HCLTECH", "MARUTI", "SUNPHARMA", "BHARTIARTL", "NTPC", "POWERGRID",
-    "COALINDIA", "ULTRACEMCO", "SBIN", "ONGC", "ASIANPAINT", "NESTLEIND",
-    "TATASTEEL", "HINDALCO", "JSWSTEEL", "GRASIM", "TECHM", "DRREDDY",
-    "CIPLA", "BAJFINANCE", "BAJAJFINSV", "ICICIBANK", "WIPRO", "LT",
-    "ADANIENT", "BRITANNIA", "DIVISLAB",
-    
-    "PAGEIND", "DABUR", "MARICO", "BIOCON", "CADILAHC", "MOTHERSUMI", "ASHOKLEY",
-    "LUPIN", "BOSCHLTD", "MRF", "SIEMENS", "TITAN", "BAJAJ-AUTO", "GODREJCP",
-    "PIDILITIND", "BANDHANBNK", "TORNTPHARM", "UBL", "INDIGO", "ADANIPORTS",
-    "BANKBARODA", "PNB", "FEDERALBNK", "IDFCFIRSTB", "INDUSINDBK", "LICHSGFIN",
-    "CHOLAFIN", "CANFINHOME", "MPHASIS", "COFORGE", "LTTS", "PERSISTENT",
-    "MINDTREE", "ROUTE", "APOLLOHOSP",
-    
-    "RBLBANK", "EQUITAS", "UJJIVAN", "CREDITACC", "SRTRANSFIN", "M&MFIN",
-    "MAHINDCIE", "MCDOWELL-N", "AUROPHARMA", "GRANULES", "THERMAX", "HAVELLS",
-    "BERGEPAINT", "VOLTAS", "BEL", "BHEL", "CONCOR", "SJVN", "NHPC",
-    "NMDC", "VEDL", "SAIL", "JSWENERGY", "RECLTD", "PFC", "IOC", "BPCL",
-    "HINDPETRO", "GAIL", "HUDCO", "NYKAA", "PAYTM", "ZOMATO", "HDFCAMC",
-    "TATAMOTORS"
+    "HDFCBANK",
+    "ICICIBANK",
+    "KOTAKBANK",
+    "AXISBANK",
+    "SBIN",
+    "INDUSINDBK",
+    "BANKBARODA",
+    "PNB",
+    "CANBK",
+    "UNIONBANK",
+    "IDFCFIRSTB",
+    "FEDERALBNK",
+    "TCS",
+    "INFY",
+    "WIPRO",
+    "HCLTECH",
+    "TECHM",
+    "LTIM",
+    "MPHASIS",
+    "COFORGE",
+    "PERSISTENT",
+    "LTTS",
+    "ROUTE",
+    "BAJFINANCE",
+    "BAJAJFINSV",
+    "SBICARD",
+    "PGHH",
+    "CHOLAFIN",
+    "MANAPPURAM",
+    "MUTHOOTFIN",
+    "SHRIRAMFIN",
+    "ABCAPITAL",
+    "MARUTI",
+    "M&M",
+    "BAJAJ-AUTO",
+    "HEROMOTOCO",
+    "EICHERMOT",
+    "ASHOKLEY",
+    "BHARATFORG",
+    "MOTHERSON",
+    "BOSCHLTD",
+    "MRF",
+    "APOLLOTYRE",
+    "SUNPHARMA",
+    "DRREDDY",
+    "CIPLA",
+    "DIVISLAB",
+    "APOLLOHOSP",
+    "TORNTPHARM",
+    "AUROPHARMA",
+    "LUPIN",
+    "BIOCON",
+    "ALKEM",
+    "GLENMARK",
+    "GRANULES",
+    "HINDUNILVR",
+    "ITC",
+    "NESTLEIND",
+    "BRITANNIA",
+    "ASIANPAINT",
+    "PIDILITIND",
+    "GODREJCP",
+    "MARICO",
+    "DABUR",
+    "COLPAL",
+    "EMAMILTD",
+    "VBL",
+    "RELIANCE",
+    "ONGC",
+    "IOC",
+    "BPCL",
+    "GAIL",
+    "PETRONET",
+    "HINDPETRO",
+    "CASTROLIND",
+    "GSPL",
+    "MGL",
+    "IGL",
+    "ATGL",
+    "TATASTEEL",
+    "HINDALCO",
+    "JSWSTEEL",
+    "VEDL",
+    "NMDC",
+    "COALINDIA",
+    "SAIL",
+    "JINDALSTEL",
+    "NATIONALUM",
+    "HINDZINC",
+    "RATNAMANI",
+    "WELCORP",
+    "ULTRACEMCO",
+    "GRASIM",
+    "AMBUJACEM",
+    "ACC",
+    "SHREECEM",
+    "DALBHARAT",
+    "RAMCOCEM",
+    "BIRLACORPN",
+    "STARCEMENT",
+    "JKCEMENT",
+    "HEIDELBERG",
+    "JKLAKSHMI",
+    "POWERGRID",
+    "NTPC",
+    "ADANIGREEN",
+    "ADANIPOWER",
+    "TATAPOWER",
+    "TORNTPOWER",
+    "CESC",
+    "NHPC",
+    "SJVN",
+    "BHARTIARTL",
+    "IDEA",
+    "TTML",
+    "GTPL",
+    "RAILTEL",
+    "DLF",
+    "GODREJPROP",
+    "OBEROIRLTY",
+    "PHOENIXLTD",
+    "PRESTIGE",
+    "SOBHA",
+    "BRIGADE",
+    "MAHLIFE",
+    "KOLTEPATIL",
+    "LT",
+    "ADANIENT",
+    "ADANIPORTS",
+    "SIEMENS",
+    "ABB",
+    "KEC",
+    "NBCC",
+    "IRCON",
+    "AIAENG",
+    "ASTRAL",
+    "TITAN",
+    "HAVELLS",
+    "VOLTAS",
+    "CROMPTON",
+    "BATAINDIA",
+    "DIXON",
+    "WHIRLPOOL",
+    "RAJESHEXPO",
+    "SYMPHONY",
+    "BLUESTARCO",
+    "DMART",
+    "TRENT",
+    "PAGEIND",
+    "SHOPERSTOP",
+    "VMART",
+    "ABFRL",
+    "RAYMOND",
+    "HDFCLIFE",
+    "SBILIFE",
+    "ICICIPRULI",
+    "ICICIGI",
+    "MAXHEALTH",
+    "STARHEALTH",
+    "CARERATING",
+    "PIIND",
+    "ATUL",
+    "DEEPAKNTR",
+    "NAVINFLUOR",
+    "ALKYLAMINE",
+    "CLEAN",
+    "FINEORG",
+    "ARVIND",
+    "VARDHACRLC",
+    "GARFIBRES",
+    "NIITLTD",
+    "ZEEL",
+    "PVRINOX",
+    "SUNTV",
+    "NETWORK18",
+    "SAREGAMA",
+    "BLUEDART",
+    "CONCOR",
+    "MAHLOG",
+    "TCI",
+    "ALLCARGO"
   ],
   "max_positions": 20,
   "watchlist_breakdown": {
     "large_cap": 35,
-    "mid_cap": 35, 
+    "mid_cap": 35,
     "small_cap": 35,
     "total": 105,
     "note": "First 35 = Large Cap, Next 35 = Mid Cap, Last 35 = Small Cap"
+  },
+  "sector_mapping": {
+    "HDFCBANK": {
+      "sector": "BANKING",
+      "market_cap": "LARGE"
+    },
+    "ICICIBANK": {
+      "sector": "BANKING",
+      "market_cap": "LARGE"
+    },
+    "KOTAKBANK": {
+      "sector": "BANKING",
+      "market_cap": "LARGE"
+    },
+    "AXISBANK": {
+      "sector": "BANKING",
+      "market_cap": "LARGE"
+    },
+    "SBIN": {
+      "sector": "BANKING",
+      "market_cap": "LARGE"
+    },
+    "INDUSINDBK": {
+      "sector": "BANKING",
+      "market_cap": "LARGE"
+    },
+    "BANKBARODA": {
+      "sector": "BANKING",
+      "market_cap": "MID"
+    },
+    "PNB": {
+      "sector": "BANKING",
+      "market_cap": "MID"
+    },
+    "CANBK": {
+      "sector": "BANKING",
+      "market_cap": "MID"
+    },
+    "UNIONBANK": {
+      "sector": "BANKING",
+      "market_cap": "MID"
+    },
+    "IDFCFIRSTB": {
+      "sector": "BANKING",
+      "market_cap": "MID"
+    },
+    "FEDERALBNK": {
+      "sector": "BANKING",
+      "market_cap": "MID"
+    },
+    "TCS": {
+      "sector": "IT_SERVICES",
+      "market_cap": "LARGE"
+    },
+    "INFY": {
+      "sector": "IT_SERVICES",
+      "market_cap": "LARGE"
+    },
+    "WIPRO": {
+      "sector": "IT_SERVICES",
+      "market_cap": "LARGE"
+    },
+    "HCLTECH": {
+      "sector": "IT_SERVICES",
+      "market_cap": "LARGE"
+    },
+    "TECHM": {
+      "sector": "IT_SERVICES",
+      "market_cap": "LARGE"
+    },
+    "LTIM": {
+      "sector": "IT_SERVICES",
+      "market_cap": "LARGE"
+    },
+    "MPHASIS": {
+      "sector": "IT_SERVICES",
+      "market_cap": "MID"
+    },
+    "COFORGE": {
+      "sector": "IT_SERVICES",
+      "market_cap": "MID"
+    },
+    "PERSISTENT": {
+      "sector": "IT_SERVICES",
+      "market_cap": "MID"
+    },
+    "LTTS": {
+      "sector": "IT_SERVICES",
+      "market_cap": "MID"
+    },
+    "ROUTE": {
+      "sector": "IT_SERVICES",
+      "market_cap": "MID"
+    },
+    "BAJFINANCE": {
+      "sector": "FINANCIALS_NBFC",
+      "market_cap": "LARGE"
+    },
+    "BAJAJFINSV": {
+      "sector": "FINANCIALS_NBFC",
+      "market_cap": "LARGE"
+    },
+    "SBICARD": {
+      "sector": "FINANCIALS_NBFC",
+      "market_cap": "LARGE"
+    },
+    "PGHH": {
+      "sector": "FINANCIALS_NBFC",
+      "market_cap": "LARGE"
+    },
+    "CHOLAFIN": {
+      "sector": "FINANCIALS_NBFC",
+      "market_cap": "MID"
+    },
+    "MANAPPURAM": {
+      "sector": "FINANCIALS_NBFC",
+      "market_cap": "MID"
+    },
+    "MUTHOOTFIN": {
+      "sector": "FINANCIALS_NBFC",
+      "market_cap": "MID"
+    },
+    "SHRIRAMFIN": {
+      "sector": "FINANCIALS_NBFC",
+      "market_cap": "MID"
+    },
+    "ABCAPITAL": {
+      "sector": "FINANCIALS_NBFC",
+      "market_cap": "MID"
+    },
+    "MARUTI": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "LARGE"
+    },
+    "M&M": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "LARGE"
+    },
+    "BAJAJ-AUTO": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "LARGE"
+    },
+    "HEROMOTOCO": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "LARGE"
+    },
+    "EICHERMOT": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "LARGE"
+    },
+    "ASHOKLEY": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "MID"
+    },
+    "BHARATFORG": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "MID"
+    },
+    "MOTHERSON": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "MID"
+    },
+    "BOSCHLTD": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "MID"
+    },
+    "MRF": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "MID"
+    },
+    "APOLLOTYRE": {
+      "sector": "AUTOMOBILE",
+      "market_cap": "MID"
+    },
+    "SUNPHARMA": {
+      "sector": "PHARMA",
+      "market_cap": "LARGE"
+    },
+    "DRREDDY": {
+      "sector": "PHARMA",
+      "market_cap": "LARGE"
+    },
+    "CIPLA": {
+      "sector": "PHARMA",
+      "market_cap": "LARGE"
+    },
+    "DIVISLAB": {
+      "sector": "PHARMA",
+      "market_cap": "LARGE"
+    },
+    "APOLLOHOSP": {
+      "sector": "PHARMA",
+      "market_cap": "LARGE"
+    },
+    "TORNTPHARM": {
+      "sector": "PHARMA",
+      "market_cap": "LARGE"
+    },
+    "AUROPHARMA": {
+      "sector": "PHARMA",
+      "market_cap": "MID"
+    },
+    "LUPIN": {
+      "sector": "PHARMA",
+      "market_cap": "MID"
+    },
+    "BIOCON": {
+      "sector": "PHARMA",
+      "market_cap": "MID"
+    },
+    "ALKEM": {
+      "sector": "PHARMA",
+      "market_cap": "MID"
+    },
+    "GLENMARK": {
+      "sector": "PHARMA",
+      "market_cap": "MID"
+    },
+    "GRANULES": {
+      "sector": "PHARMA",
+      "market_cap": "MID"
+    },
+    "HINDUNILVR": {
+      "sector": "FMCG",
+      "market_cap": "LARGE"
+    },
+    "ITC": {
+      "sector": "FMCG",
+      "market_cap": "LARGE"
+    },
+    "NESTLEIND": {
+      "sector": "FMCG",
+      "market_cap": "LARGE"
+    },
+    "BRITANNIA": {
+      "sector": "FMCG",
+      "market_cap": "LARGE"
+    },
+    "ASIANPAINT": {
+      "sector": "FMCG",
+      "market_cap": "LARGE"
+    },
+    "PIDILITIND": {
+      "sector": "FMCG",
+      "market_cap": "LARGE"
+    },
+    "GODREJCP": {
+      "sector": "FMCG",
+      "market_cap": "MID"
+    },
+    "MARICO": {
+      "sector": "FMCG",
+      "market_cap": "MID"
+    },
+    "DABUR": {
+      "sector": "FMCG",
+      "market_cap": "MID"
+    },
+    "COLPAL": {
+      "sector": "FMCG",
+      "market_cap": "MID"
+    },
+    "EMAMILTD": {
+      "sector": "FMCG",
+      "market_cap": "MID"
+    },
+    "VBL": {
+      "sector": "FMCG",
+      "market_cap": "MID"
+    },
+    "RELIANCE": {
+      "sector": "RETAIL",
+      "market_cap": "LARGE"
+    },
+    "ONGC": {
+      "sector": "OIL_GAS",
+      "market_cap": "LARGE"
+    },
+    "IOC": {
+      "sector": "OIL_GAS",
+      "market_cap": "LARGE"
+    },
+    "BPCL": {
+      "sector": "OIL_GAS",
+      "market_cap": "LARGE"
+    },
+    "GAIL": {
+      "sector": "OIL_GAS",
+      "market_cap": "LARGE"
+    },
+    "PETRONET": {
+      "sector": "OIL_GAS",
+      "market_cap": "LARGE"
+    },
+    "HINDPETRO": {
+      "sector": "OIL_GAS",
+      "market_cap": "MID"
+    },
+    "CASTROLIND": {
+      "sector": "OIL_GAS",
+      "market_cap": "MID"
+    },
+    "GSPL": {
+      "sector": "OIL_GAS",
+      "market_cap": "MID"
+    },
+    "MGL": {
+      "sector": "OIL_GAS",
+      "market_cap": "MID"
+    },
+    "IGL": {
+      "sector": "OIL_GAS",
+      "market_cap": "MID"
+    },
+    "ATGL": {
+      "sector": "OIL_GAS",
+      "market_cap": "MID"
+    },
+    "TATASTEEL": {
+      "sector": "METALS_MINING",
+      "market_cap": "LARGE"
+    },
+    "HINDALCO": {
+      "sector": "METALS_MINING",
+      "market_cap": "LARGE"
+    },
+    "JSWSTEEL": {
+      "sector": "METALS_MINING",
+      "market_cap": "LARGE"
+    },
+    "VEDL": {
+      "sector": "METALS_MINING",
+      "market_cap": "LARGE"
+    },
+    "NMDC": {
+      "sector": "METALS_MINING",
+      "market_cap": "LARGE"
+    },
+    "COALINDIA": {
+      "sector": "METALS_MINING",
+      "market_cap": "LARGE"
+    },
+    "SAIL": {
+      "sector": "METALS_MINING",
+      "market_cap": "MID"
+    },
+    "JINDALSTEL": {
+      "sector": "METALS_MINING",
+      "market_cap": "MID"
+    },
+    "NATIONALUM": {
+      "sector": "METALS_MINING",
+      "market_cap": "MID"
+    },
+    "HINDZINC": {
+      "sector": "METALS_MINING",
+      "market_cap": "MID"
+    },
+    "RATNAMANI": {
+      "sector": "METALS_MINING",
+      "market_cap": "MID"
+    },
+    "WELCORP": {
+      "sector": "METALS_MINING",
+      "market_cap": "MID"
+    },
+    "ULTRACEMCO": {
+      "sector": "CEMENT",
+      "market_cap": "LARGE"
+    },
+    "GRASIM": {
+      "sector": "CEMENT",
+      "market_cap": "LARGE"
+    },
+    "AMBUJACEM": {
+      "sector": "CEMENT",
+      "market_cap": "LARGE"
+    },
+    "ACC": {
+      "sector": "CEMENT",
+      "market_cap": "LARGE"
+    },
+    "SHREECEM": {
+      "sector": "CEMENT",
+      "market_cap": "LARGE"
+    },
+    "DALBHARAT": {
+      "sector": "CEMENT",
+      "market_cap": "LARGE"
+    },
+    "RAMCOCEM": {
+      "sector": "CEMENT",
+      "market_cap": "MID"
+    },
+    "BIRLACORPN": {
+      "sector": "CEMENT",
+      "market_cap": "MID"
+    },
+    "STARCEMENT": {
+      "sector": "CEMENT",
+      "market_cap": "MID"
+    },
+    "JKCEMENT": {
+      "sector": "CEMENT",
+      "market_cap": "MID"
+    },
+    "HEIDELBERG": {
+      "sector": "CEMENT",
+      "market_cap": "MID"
+    },
+    "JKLAKSHMI": {
+      "sector": "CEMENT",
+      "market_cap": "MID"
+    },
+    "POWERGRID": {
+      "sector": "POWER",
+      "market_cap": "LARGE"
+    },
+    "NTPC": {
+      "sector": "POWER",
+      "market_cap": "LARGE"
+    },
+    "ADANIGREEN": {
+      "sector": "POWER",
+      "market_cap": "LARGE"
+    },
+    "ADANIPOWER": {
+      "sector": "POWER",
+      "market_cap": "LARGE"
+    },
+    "TATAPOWER": {
+      "sector": "POWER",
+      "market_cap": "LARGE"
+    },
+    "TORNTPOWER": {
+      "sector": "POWER",
+      "market_cap": "MID"
+    },
+    "CESC": {
+      "sector": "POWER",
+      "market_cap": "MID"
+    },
+    "NHPC": {
+      "sector": "POWER",
+      "market_cap": "MID"
+    },
+    "SJVN": {
+      "sector": "POWER",
+      "market_cap": "MID"
+    },
+    "BHARTIARTL": {
+      "sector": "TELECOM",
+      "market_cap": "LARGE"
+    },
+    "IDEA": {
+      "sector": "TELECOM",
+      "market_cap": "LARGE"
+    },
+    "TTML": {
+      "sector": "TELECOM",
+      "market_cap": "MID"
+    },
+    "GTPL": {
+      "sector": "TELECOM",
+      "market_cap": "MID"
+    },
+    "RAILTEL": {
+      "sector": "TELECOM",
+      "market_cap": "MID"
+    },
+    "DLF": {
+      "sector": "REALTY",
+      "market_cap": "LARGE"
+    },
+    "GODREJPROP": {
+      "sector": "REALTY",
+      "market_cap": "LARGE"
+    },
+    "OBEROIRLTY": {
+      "sector": "REALTY",
+      "market_cap": "LARGE"
+    },
+    "PHOENIXLTD": {
+      "sector": "REALTY",
+      "market_cap": "LARGE"
+    },
+    "PRESTIGE": {
+      "sector": "REALTY",
+      "market_cap": "MID"
+    },
+    "SOBHA": {
+      "sector": "REALTY",
+      "market_cap": "MID"
+    },
+    "BRIGADE": {
+      "sector": "REALTY",
+      "market_cap": "MID"
+    },
+    "MAHLIFE": {
+      "sector": "REALTY",
+      "market_cap": "MID"
+    },
+    "KOLTEPATIL": {
+      "sector": "REALTY",
+      "market_cap": "MID"
+    },
+    "LT": {
+      "sector": "INFRASTRUCTURE",
+      "market_cap": "LARGE"
+    },
+    "ADANIENT": {
+      "sector": "INFRASTRUCTURE",
+      "market_cap": "LARGE"
+    },
+    "ADANIPORTS": {
+      "sector": "INFRASTRUCTURE",
+      "market_cap": "LARGE"
+    },
+    "SIEMENS": {
+      "sector": "INFRASTRUCTURE",
+      "market_cap": "LARGE"
+    },
+    "ABB": {
+      "sector": "INFRASTRUCTURE",
+      "market_cap": "LARGE"
+    },
+    "KEC": {
+      "sector": "INFRASTRUCTURE",
+      "market_cap": "MID"
+    },
+    "NBCC": {
+      "sector": "INFRASTRUCTURE",
+      "market_cap": "MID"
+    },
+    "IRCON": {
+      "sector": "INFRASTRUCTURE",
+      "market_cap": "MID"
+    },
+    "AIAENG": {
+      "sector": "INFRASTRUCTURE",
+      "market_cap": "MID"
+    },
+    "ASTRAL": {
+      "sector": "INFRASTRUCTURE",
+      "market_cap": "MID"
+    },
+    "TITAN": {
+      "sector": "CONSUMER_DURABLES",
+      "market_cap": "LARGE"
+    },
+    "HAVELLS": {
+      "sector": "CONSUMER_DURABLES",
+      "market_cap": "LARGE"
+    },
+    "VOLTAS": {
+      "sector": "CONSUMER_DURABLES",
+      "market_cap": "LARGE"
+    },
+    "CROMPTON": {
+      "sector": "CONSUMER_DURABLES",
+      "market_cap": "LARGE"
+    },
+    "BATAINDIA": {
+      "sector": "CONSUMER_DURABLES",
+      "market_cap": "LARGE"
+    },
+    "DIXON": {
+      "sector": "CONSUMER_DURABLES",
+      "market_cap": "MID"
+    },
+    "WHIRLPOOL": {
+      "sector": "CONSUMER_DURABLES",
+      "market_cap": "MID"
+    },
+    "RAJESHEXPO": {
+      "sector": "CONSUMER_DURABLES",
+      "market_cap": "MID"
+    },
+    "SYMPHONY": {
+      "sector": "CONSUMER_DURABLES",
+      "market_cap": "MID"
+    },
+    "BLUESTARCO": {
+      "sector": "CONSUMER_DURABLES",
+      "market_cap": "MID"
+    },
+    "DMART": {
+      "sector": "RETAIL",
+      "market_cap": "LARGE"
+    },
+    "TRENT": {
+      "sector": "RETAIL",
+      "market_cap": "LARGE"
+    },
+    "PAGEIND": {
+      "sector": "TEXTILES",
+      "market_cap": "LARGE"
+    },
+    "SHOPERSTOP": {
+      "sector": "RETAIL",
+      "market_cap": "MID"
+    },
+    "VMART": {
+      "sector": "RETAIL",
+      "market_cap": "MID"
+    },
+    "ABFRL": {
+      "sector": "RETAIL",
+      "market_cap": "MID"
+    },
+    "RAYMOND": {
+      "sector": "RETAIL",
+      "market_cap": "MID"
+    },
+    "HDFCLIFE": {
+      "sector": "INSURANCE",
+      "market_cap": "LARGE"
+    },
+    "SBILIFE": {
+      "sector": "INSURANCE",
+      "market_cap": "LARGE"
+    },
+    "ICICIPRULI": {
+      "sector": "INSURANCE",
+      "market_cap": "LARGE"
+    },
+    "ICICIGI": {
+      "sector": "INSURANCE",
+      "market_cap": "LARGE"
+    },
+    "MAXHEALTH": {
+      "sector": "INSURANCE",
+      "market_cap": "MID"
+    },
+    "STARHEALTH": {
+      "sector": "INSURANCE",
+      "market_cap": "MID"
+    },
+    "CARERATING": {
+      "sector": "INSURANCE",
+      "market_cap": "MID"
+    },
+    "PIIND": {
+      "sector": "CHEMICALS",
+      "market_cap": "LARGE"
+    },
+    "ATUL": {
+      "sector": "CHEMICALS",
+      "market_cap": "LARGE"
+    },
+    "DEEPAKNTR": {
+      "sector": "CHEMICALS",
+      "market_cap": "LARGE"
+    },
+    "NAVINFLUOR": {
+      "sector": "CHEMICALS",
+      "market_cap": "MID"
+    },
+    "ALKYLAMINE": {
+      "sector": "CHEMICALS",
+      "market_cap": "MID"
+    },
+    "CLEAN": {
+      "sector": "CHEMICALS",
+      "market_cap": "MID"
+    },
+    "FINEORG": {
+      "sector": "CHEMICALS",
+      "market_cap": "MID"
+    },
+    "ARVIND": {
+      "sector": "TEXTILES",
+      "market_cap": "LARGE"
+    },
+    "VARDHACRLC": {
+      "sector": "TEXTILES",
+      "market_cap": "MID"
+    },
+    "GARFIBRES": {
+      "sector": "TEXTILES",
+      "market_cap": "MID"
+    },
+    "NIITLTD": {
+      "sector": "TEXTILES",
+      "market_cap": "MID"
+    },
+    "ZEEL": {
+      "sector": "MEDIA_ENTERTAINMENT",
+      "market_cap": "LARGE"
+    },
+    "PVRINOX": {
+      "sector": "MEDIA_ENTERTAINMENT",
+      "market_cap": "LARGE"
+    },
+    "SUNTV": {
+      "sector": "MEDIA_ENTERTAINMENT",
+      "market_cap": "MID"
+    },
+    "NETWORK18": {
+      "sector": "MEDIA_ENTERTAINMENT",
+      "market_cap": "MID"
+    },
+    "SAREGAMA": {
+      "sector": "MEDIA_ENTERTAINMENT",
+      "market_cap": "MID"
+    },
+    "BLUEDART": {
+      "sector": "LOGISTICS",
+      "market_cap": "LARGE"
+    },
+    "CONCOR": {
+      "sector": "LOGISTICS",
+      "market_cap": "LARGE"
+    },
+    "MAHLOG": {
+      "sector": "LOGISTICS",
+      "market_cap": "MID"
+    },
+    "TCI": {
+      "sector": "LOGISTICS",
+      "market_cap": "MID"
+    },
+    "ALLCARGO": {
+      "sector": "LOGISTICS",
+      "market_cap": "MID"
+    }
+  },
+  "watchlist_metadata": {
+    "last_validated": "2025-10-28T12:57:09.974006+05:30",
+    "source": "stock_universe_by_sector.json",
+    "symbol_count": 181,
+    "invalid_symbols": [
+      "MINDTREE",
+      "HDFC",
+      "TATAMOTORS",
+      "BOROSIL",
+      "JIO",
+      "AARTI",
+      "WELSPUNIND",
+      "TV18BRDCST",
+      "VRL"
+    ],
+    "mapped_symbols": {}
   }
 }

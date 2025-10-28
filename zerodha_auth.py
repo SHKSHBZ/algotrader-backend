@@ -280,6 +280,15 @@ class ZerodhaAuth:
                 self.session_file.unlink()
             return False
     
+    def is_session_valid(self) -> bool:
+        """Return True if a saved session exists and is still usable."""
+        try:
+            if not self.load_credentials():
+                return False
+            return self.load_session()
+        except Exception:
+            return False
+
     def get_session_info(self):
         """
         Get current session information

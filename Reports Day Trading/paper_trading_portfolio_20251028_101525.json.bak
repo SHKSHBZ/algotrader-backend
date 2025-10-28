@@ -1,0 +1,13 @@
+{
+  "last_trading_date": "2025-10-28T10:07:44.786636+05:30",
+  "session_end_time": "2025-10-28 10:07:44",
+  "initial_capital": 250000,
+  "capital": 250000,
+  "available_capital": 250000,
+  "positions": {},
+  "trade_history": [],
+  "total_trades": 0,
+  "winning_trades": 0,
+  "total_portfolio_value": 250000,
+  "end_of_day_balance": 250000
+}

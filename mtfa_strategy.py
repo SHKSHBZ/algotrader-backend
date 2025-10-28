@@ -33,6 +33,12 @@ class MTFAStrategy:
         
         # Cache manager for data
         self.cache_mgr = DataCacheManager()
+        self._insufficient_logged: set[str] = set()
+        self._min_rows = {
+            'daily': 20,
+            '60min': 40,
+            '15min': 40,
+        }
         
         # Centralized strategy configuration
         strategy_config = self.config.get('strategy', {})
@@ -86,8 +92,17 @@ class MTFAStrategy:
             # Step 1: Get multi-timeframe data
             data_dict = self._load_mtf_data(symbol)
             
-            if not self._validate_data(data_dict):
-                logging.warning(f"Insufficient data for {symbol}")
+            valid, missing = self._validate_data(data_dict)
+            if not valid and symbol not in self._insufficient_logged:
+                if self._recover_symbol_data(symbol, missing):
+                    data_dict = self._load_mtf_data(symbol)
+                    valid, missing = self._validate_data(data_dict)
+
+            if not valid:
+                if symbol not in self._insufficient_logged:
+                    missing_desc = ', '.join(sorted(missing)) if missing else 'unknown timeframes'
+                    logging.warning(f"Insufficient data for {symbol} (missing: {missing_desc})")
+                    self._insufficient_logged.add(symbol)
                 return result
             
             # Step 2: Analyze each timeframe
@@ -275,15 +290,32 @@ class MTFAStrategy:
             logging.error(f"Timeframe synchronization error: {e}")
             return data_dict  # Return original if sync fails
     
-    def _validate_data(self, data_dict: Dict) -> bool:
+    def _validate_data(self, data_dict: Dict) -> Tuple[bool, List[str]]:
         """Validate we have sufficient data for analysis"""
         required = ['daily', '60min', '15min']
+        missing: List[str] = []
         
         for tf in required:
-            if tf not in data_dict or len(data_dict[tf]) < 20:
-                return False
+            df = data_dict.get(tf)
+            if df is None:
+                missing.append(tf)
+                continue
+            min_rows = self._min_rows.get(tf, 20)
+            if len(df) < min_rows:
+                missing.append(tf)
         
-        return True
+        return (len(missing) == 0), missing
+
+    def _recover_symbol_data(self, symbol: str, missing: List[str]) -> bool:
+        """Attempt to download missing timeframes for a symbol."""
+        attempted = False
+        for tf in missing:
+            try:
+                self.cache_mgr.download_historical_data(symbol, tf, force_download=True)
+                attempted = True
+            except Exception as exc:
+                logging.info(f"{symbol}: unable to refresh {tf} data ({exc})")
+        return attempted
     
     def _analyze_daily(self, data: pd.DataFrame) -> Dict:
         """Analyze daily timeframe for overall trend - Single SMA filter only"""

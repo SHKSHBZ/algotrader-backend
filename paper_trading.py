@@ -33,6 +33,13 @@ from reports import reporting
 IST = pytz.timezone('Asia/Kolkata')
 
 
+class ZerodhaAuthenticationError(RuntimeError):
+    """Raised when Zerodha authentication is required before proceeding."""
+
+    def __init__(self, message: str = "Zerodha authentication required"):
+        super().__init__(message)
+
+
 class ZerodhaLiveAPI:
     """Professional Zerodha API integration with KiteConnect"""
     
@@ -40,10 +47,27 @@ class ZerodhaLiveAPI:
         self.auth = ZerodhaAuth()
         self.kite = None
         self.instruments = {}  # symbol -> instrument_token mapping
+        self.instruments_df = None
+        self.valid_symbols = set()
+        self.symbol_mapping = {}
+        self.stock_universe = {}
+        self.sector_mapping = {}
         self.rate_limit_count = 0
         self.last_rate_limit_reset = datetime.now()
         self.config_file = Path('zerodha_config.json')
         self.session_file = Path('zerodha_session.json')
+        self.instrument_cache_file = Path('instruments_cache.json')
+
+        # Try to attach saved Zerodha session immediately so instrument calls work without extra prompts
+        attached = self._auto_attach_session()
+        if not attached or self.kite is None:
+            raise ZerodhaAuthenticationError(
+                "Zerodha authentication required. Run: python authenticate_zerodha.py"
+            )
+
+        # Pre-load static resources for symbol validation
+        self.load_stock_universe()
+        self._load_instruments_cache()
     
     @classmethod
     def setup_config(cls, api_key: str, api_secret: str):
@@ -299,30 +323,221 @@ class ZerodhaLiveAPI:
         except Exception as e:
             print(f"[AUTH] Error clearing session: {e}")
         
-    def load_instruments(self):
-        """Load instrument tokens for all symbols"""
+    def load_instruments(self, force_refresh: bool = False):
+        """Backward-compatible wrapper that delegates to load_all_instruments."""
+        return self.load_all_instruments(force_refresh=force_refresh)
+
+    def _auto_attach_session(self) -> bool:
+        """Attach an existing Zerodha session so that instrument lookups work instantly."""
         try:
-            if not self.kite:
-                print(f"[ERROR] Not authenticated. Call authenticate() first.")
+            kite = self.auth.get_kite_instance()
+            if kite:
+                self.kite = kite
+                # These attributes are convenient later when refreshing sessions
+                self.api_key = getattr(self.auth, 'api_key', None)
+                self.access_token = getattr(self.auth, 'access_token', None)
+                print(f"[AUTH] Using saved Zerodha session")
+                return True
+        except Exception as exc:
+            print(f"[AUTH] Unable to attach saved session: {exc}")
+        return False
+
+    def load_stock_universe(self) -> bool:
+        """Load sector-wise stock universe for better validation and reporting."""
+        try:
+            universe_path = Path('stock_universe_by_sector.json')
+            if not universe_path.exists():
                 return False
-            
-            print(f"[INSTRUMENTS] Loading instrument data...")
-            
-            # Get all NSE instruments
-            instruments = self.kite.instruments("NSE")
-            
-            # Create symbol -> token mapping
-            for instrument in instruments:
-                symbol = instrument['tradingsymbol']
-                token = instrument['instrument_token']
-                self.instruments[symbol] = token
-            
-            print(f"[INSTRUMENTS] Loaded {len(self.instruments)} instruments")
-            return True
-            
-        except Exception as e:
-            print(f"[INSTRUMENTS] Failed to load instruments: {e}")
+            data = json.loads(universe_path.read_text(encoding='utf-8'))
+            self.stock_universe = {}
+            self.sector_mapping = {}
+            total_symbols = 0
+            for sector, payload in data.items():
+                sector_info = {
+                    'description': payload.get('description', ''),
+                    'large_cap': payload.get('large_cap', []),
+                    'mid_cap': payload.get('mid_cap', []),
+                    'small_cap': payload.get('small_cap', []),
+                }
+                self.stock_universe[sector] = sector_info
+                for cap_bucket, symbols in (
+                    ('LARGE', sector_info['large_cap']),
+                    ('MID', sector_info['mid_cap']),
+                    ('SMALL', sector_info['small_cap']),
+                ):
+                    for symbol in symbols:
+                        total_symbols += 1
+                        self.sector_mapping[symbol] = {
+                            'sector': sector,
+                            'market_cap': cap_bucket,
+                        }
+            if total_symbols:
+                print(f"[UNIVERSE] Loaded {total_symbols} symbols across {len(self.stock_universe)} sectors")
+            return bool(total_symbols)
+        except Exception as exc:
+            print(f"[UNIVERSE] Failed to load stock universe: {exc}")
             return False
+
+    def _save_instruments_cache(self):
+        """Persist instrument metadata so we can validate symbols offline."""
+        try:
+            snapshot = {
+                'timestamp': datetime.now(IST).isoformat(),
+                'valid_symbols': sorted(self.valid_symbols),
+                'symbol_mapping': self.symbol_mapping,
+                'instruments': self.instruments,
+            }
+            self.instrument_cache_file.write_text(json.dumps(snapshot, indent=2), encoding='utf-8')
+            print(f"[CACHE] Saved {len(self.valid_symbols)} symbols to instruments cache")
+        except Exception as exc:
+            print(f"[CACHE] Unable to save instruments cache: {exc}")
+
+    def _load_instruments_cache(self) -> bool:
+        """Load instrument metadata from cache if it is still fresh."""
+        try:
+            if not self.instrument_cache_file.exists():
+                return False
+            data = json.loads(self.instrument_cache_file.read_text(encoding='utf-8'))
+            timestamp = data.get('timestamp')
+            if timestamp:
+                cached_at = datetime.fromisoformat(timestamp)
+                age_hours = (datetime.now(IST) - cached_at).total_seconds() / 3600
+                if age_hours > 24:
+                    print(f"[CACHE] Instruments cache is {age_hours:.1f}h old - refresh recommended")
+                else:
+                    print(f"[CACHE] Loaded instruments cache ({age_hours:.1f}h old)")
+            self.valid_symbols = set(data.get('valid_symbols', []))
+            self.symbol_mapping = data.get('symbol_mapping', {})
+            self.instruments = data.get('instruments', {})
+            return bool(self.valid_symbols)
+        except Exception as exc:
+            print(f"[CACHE] Failed to load instruments cache: {exc}")
+            return False
+
+    def load_all_instruments(self, force_refresh: bool = False) -> bool:
+        """Download the latest instrument master and prepare validation helpers."""
+        if self.valid_symbols and not force_refresh:
+            return True
+
+        if not self.kite:
+            if not self._auto_attach_session():
+                print(f"[INSTRUMENTS] No live session - using cached symbols if available")
+                return self._load_instruments_cache()
+
+        try:
+            print(f"[INSTRUMENTS] Fetching instruments from Zerodha...")
+            nse_instruments = self.kite.instruments("NSE")
+            if not nse_instruments:
+                raise ValueError("Empty response from Zerodha")
+
+            df = pd.DataFrame(nse_instruments)
+            if df.empty:
+                raise ValueError("Instrument dataframe is empty")
+
+            # Keep only equity symbols for NSE
+            equity_df = df[(df['instrument_type'] == 'EQ') & (df['exchange'] == 'NSE')]
+            self.instruments_df = equity_df
+
+            instruments = {}
+            valid_symbols = set()
+            symbol_mapping = {}
+
+            for row in equity_df.itertuples():
+                symbol = getattr(row, 'tradingsymbol')
+                token = int(getattr(row, 'instrument_token'))
+                instruments[symbol] = token
+                valid_symbols.add(symbol)
+
+                # Normalised variations to aid lookups
+                if symbol.endswith('-EQ'):
+                    symbol_mapping[symbol[:-3]] = symbol
+                cleaned = symbol.replace('-', '')
+                if cleaned != symbol:
+                    symbol_mapping[cleaned] = symbol
+
+            self.instruments = instruments
+            self.valid_symbols = valid_symbols
+            self.symbol_mapping = symbol_mapping
+
+            print(f"[INSTRUMENTS] Loaded {len(self.valid_symbols)} NSE equity symbols")
+            self._save_instruments_cache()
+            return True
+
+        except Exception as exc:
+            print(f"[INSTRUMENTS] Failed to refresh instruments: {exc}")
+            return self._load_instruments_cache()
+
+    def validate_symbol(self, symbol: str) -> str | None:
+        """Return a vetted Zerodha symbol or None if no match is found."""
+        if not symbol:
+            return None
+
+        if not self.valid_symbols:
+            self.load_all_instruments()
+
+        candidate = symbol.strip().upper()
+        if candidate in self.valid_symbols:
+            return candidate
+
+        if candidate in self.symbol_mapping:
+            return self.symbol_mapping[candidate]
+
+        variations = {
+            candidate.replace('_', '-'),
+            candidate.replace('-', ''),
+            f"{candidate}-EQ" if not candidate.endswith('-EQ') else candidate[:-3],
+        }
+
+        for variant in variations:
+            if variant in self.valid_symbols:
+                return variant
+            if variant in self.symbol_mapping:
+                return self.symbol_mapping[variant]
+
+        return None
+
+    def validate_watchlist(self, symbols: list[str]) -> dict:
+        """Validate a list of symbols and provide mapping details."""
+        results = {
+            'valid': [],
+            'invalid': [],
+            'mapped': {},
+        }
+
+        seen = set()
+        for raw_symbol in symbols:
+            if not raw_symbol:
+                continue
+            validated = self.validate_symbol(raw_symbol)
+            if validated:
+                if validated not in seen:
+                    results['valid'].append(validated)
+                    seen.add(validated)
+                if validated != raw_symbol:
+                    results['mapped'][raw_symbol] = validated
+            else:
+                results['invalid'].append(raw_symbol)
+        return results
+
+    def validate_watchlist_by_sector(self, symbols: list[str]) -> dict:
+        """Validate symbols and include sector breakdown when available."""
+        base = self.validate_watchlist(symbols)
+        by_sector: dict[str, list[str]] = {}
+        for symbol in base['valid']:
+            sector_info = self.get_symbol_sector(symbol)
+            sector_key = sector_info.get('sector', 'UNKNOWN') if sector_info else 'UNKNOWN'
+            by_sector.setdefault(sector_key, []).append(symbol)
+        base['by_sector'] = by_sector
+        return base
+
+    def get_symbol_sector(self, symbol: str) -> dict:
+        """Return sector metadata for a symbol if present in the universe file."""
+        if symbol in self.sector_mapping:
+            return self.sector_mapping[symbol]
+        if symbol in self.symbol_mapping:
+            mapped = self.symbol_mapping[symbol]
+            return self.sector_mapping.get(mapped, {})
+        return {}
     
     def get_live_price(self, symbol: str) -> float:
         """Get real-time price from Zerodha"""
@@ -339,20 +554,31 @@ class ZerodhaLiveAPI:
                 print(f"[ERROR] Not authenticated")
                 return 0
             
-            # Get instrument token
-            if symbol not in self.instruments:
+            lookup_symbol = symbol
+            if lookup_symbol not in self.instruments:
+                # Try to validate/normalise the symbol and reload instruments if needed
+                validated = self.validate_symbol(symbol)
+                if validated and validated in self.instruments:
+                    lookup_symbol = validated
+                else:
+                    self.load_all_instruments()
+                    validated = self.validate_symbol(symbol)
+                    if validated and validated in self.instruments:
+                        lookup_symbol = validated
+            
+            if lookup_symbol not in self.instruments:
                 print(f"[ERROR] Instrument token not found for {symbol}")
                 return 0
-            
-            instrument_token = self.instruments[symbol]
-            
+
+            instrument_token = self.instruments[lookup_symbol]
+
             # Get live quote
-            quote = self.kite.ltp(f"NSE:{symbol}")
+            quote = self.kite.ltp(f"NSE:{lookup_symbol}")
             
-            if f"NSE:{symbol}" in quote:
-                price = quote[f"NSE:{symbol}"]["last_price"]
+            if f"NSE:{lookup_symbol}" in quote:
+                price = quote[f"NSE:{lookup_symbol}"]["last_price"]
                 self.rate_limit_count += 1
-                print(f"[ZERODHA] {symbol}: Rs.{price:.2f} (REAL-TIME)")
+                print(f"[ZERODHA] {lookup_symbol}: Rs.{price:.2f} (REAL-TIME)")
                 return price
             
             return 0
@@ -410,6 +636,10 @@ class PerfectTraderPaperTrading:
                 print(f"[LIVE] Initializing Zerodha connection...")
                 self.live_api = ZerodhaLiveAPI()
                 print(f"[LIVE] Zerodha connection established")
+            except ZerodhaAuthenticationError as exc:
+                print(f"[LIVE] [ERROR] {exc}")
+                print(f"[LIVE] Please authenticate before starting the bot.")
+                raise
             except Exception as e:
                 print(f"[LIVE] [ERROR] Zerodha connection failed: {e}")
                 print(f"[LIVE] Falling back to cached data only")
@@ -430,11 +660,13 @@ class PerfectTraderPaperTrading:
         # Load existing portfolio (if available) to override defaults
         self._load_portfolio_state()
         
-        # Load config
+        # Load config and build validated watchlist
         with open('hybrid_config.json', 'r') as f:
             self.config = json.load(f)
-        
-        self.watchlist = self.config['watchlist']
+
+        self.watchlist = []
+        self.sector_mapping = {}
+        self._load_and_validate_watchlist()
         self.max_positions = self.config.get('max_positions', 20)
         self.risk_per_trade = 0.01
         
@@ -484,7 +716,270 @@ class PerfectTraderPaperTrading:
         data['count'] = int(data.get('count', 0)) + 1
         self._save_scan_counter(data)
         return data['count']
-    
+
+    def _load_and_validate_watchlist(self):
+        """Load watchlist symbols and ensure they match live market tickers."""
+        fallback_watchlist = ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY', 'ICICIBANK', 'HINDUNILVR', 'SBIN', 'BHARTIARTL', 'ITC', 'KOTAKBANK']
+        original_watchlist = list(self.config.get('watchlist', []))
+        watchlist_source = 'hybrid_config.json'
+
+        # If sector universe is available, prefer that so symbols stay curated
+        if self.live_api and self.live_api.stock_universe:
+            combined = []
+            sector_mapping = {}
+            for sector, payload in self.live_api.stock_universe.items():
+                for cap_bucket in ('large_cap', 'mid_cap', 'small_cap'):
+                    symbols = payload.get(cap_bucket, [])
+                    if not isinstance(symbols, list):
+                        continue
+                    bucket_label = cap_bucket.replace('_cap', '').upper()
+                    for symbol in symbols:
+                        if symbol not in combined:
+                            combined.append(symbol)
+                            sector_mapping[symbol] = {
+                                'sector': sector,
+                                'market_cap': bucket_label,
+                            }
+            if combined:
+                original_watchlist = combined
+                self.sector_mapping = sector_mapping
+                watchlist_source = 'stock_universe_by_sector.json'
+
+        if not original_watchlist:
+            print(f"[WATCHLIST] No symbols configured - using fallback large caps")
+            original_watchlist = fallback_watchlist[:]
+
+        validation_result = None
+        final_watchlist = list(dict.fromkeys(original_watchlist))
+
+        if self.live_api:
+            self.live_api.load_all_instruments()
+            try:
+                validation_result = self.live_api.validate_watchlist_by_sector(final_watchlist)
+                final_watchlist = validation_result['valid']
+
+                if validation_result['invalid']:
+                    print(f"[WATCHLIST] Removed {len(validation_result['invalid'])} invalid symbols")
+                if validation_result['mapped']:
+                    print(f"[WATCHLIST] Normalised {len(validation_result['mapped'])} symbols to official tickers")
+
+                # Rebuild sector mapping for valid symbols only
+                validated_mapping = {}
+                for symbol in final_watchlist:
+                    sector_info = self.live_api.get_symbol_sector(symbol)
+                    if not sector_info:
+                        sector_info = self.sector_mapping.get(symbol, {'sector': 'UNKNOWN', 'market_cap': 'UNKNOWN'})
+                    validated_mapping[symbol] = {
+                        'sector': sector_info.get('sector', 'UNKNOWN'),
+                        'market_cap': sector_info.get('market_cap', 'UNKNOWN'),
+                    }
+                self.sector_mapping = validated_mapping
+            except Exception as exc:
+                print(f"[WATCHLIST] Validation failed: {exc}")
+
+        if not final_watchlist:
+            print(f"[WATCHLIST] Validation left no symbols, reverting to fallback list")
+            final_watchlist = fallback_watchlist[:]
+            self.sector_mapping = {symbol: {'sector': 'UNKNOWN', 'market_cap': 'UNKNOWN'} for symbol in final_watchlist}
+
+        if not self.sector_mapping:
+            self.sector_mapping = {symbol: {'sector': 'UNKNOWN', 'market_cap': 'UNKNOWN'} for symbol in final_watchlist}
+        else:
+            self.sector_mapping = {
+                symbol: self.sector_mapping.get(symbol, {'sector': 'UNKNOWN', 'market_cap': 'UNKNOWN'})
+                for symbol in final_watchlist
+            }
+
+        self.watchlist = final_watchlist
+        print(f"[WATCHLIST] Ready with {len(self.watchlist)} symbols ({watchlist_source})")
+
+        # Persist validated watchlist so other modules (like auto_update_data) pick up the latest list
+        self._persist_watchlist_update(watchlist_source, validation_result)
+
+    def _persist_watchlist_update(self, source: str, validation_result: dict | None):
+        """Write the validated watchlist back to the config with a timestamp."""
+        config_path = Path('hybrid_config.json')
+        try:
+            existing_config = json.loads(config_path.read_text(encoding='utf-8')) if config_path.exists() else {}
+        except Exception:
+            existing_config = {}
+
+        needs_write = (
+            existing_config.get('watchlist') != self.watchlist
+            or existing_config.get('sector_mapping') != self.sector_mapping
+        )
+
+        if not needs_write:
+            # Nothing material changed; leave config untouched to avoid noisy backups
+            return
+
+        backup_path = None
+
+        if config_path.exists():
+            try:
+                timestamp = datetime.now(IST).strftime('%Y%m%d_%H%M%S')
+                backup_path = config_path.with_name(f"hybrid_config_backup_{timestamp}.json")
+                backup_path.write_text(config_path.read_text(encoding='utf-8'), encoding='utf-8')
+            except Exception as exc:
+                print(f"[CONFIG] Failed to create config backup: {exc}")
+                backup_path = None
+
+        self.config['watchlist'] = self.watchlist
+        self.config['sector_mapping'] = self.sector_mapping
+        metadata = {
+            'last_validated': datetime.now(IST).isoformat(),
+            'source': source,
+            'symbol_count': len(self.watchlist),
+        }
+        if validation_result:
+            metadata['invalid_symbols'] = validation_result.get('invalid', [])
+            metadata['mapped_symbols'] = validation_result.get('mapped', {})
+        self.config['watchlist_metadata'] = metadata
+
+        try:
+            config_path.write_text(json.dumps(self.config, indent=2), encoding='utf-8')
+            if backup_path:
+                print(f"[CONFIG] Watchlist updated and saved ({backup_path.name} backup)")
+            else:
+                print(f"[CONFIG] Watchlist updated and saved")
+        except Exception as exc:
+            print(f"[CONFIG] Failed to persist watchlist: {exc}")
+
+    def _print_session_metrics(self):
+        """Print capital usage, P&L, and open positions before scans begin."""
+        try:
+            utilisation = 0.0
+            holdings_details = []
+            for symbol, pos in self.positions.items():
+                qty = pos.get('shares') or pos.get('quantity') or pos.get('qty', 0)
+                if not qty:
+                    continue
+                qty = float(qty)
+                entry_price = float(pos.get('avg_price', pos.get('entry_price', 0)))
+                current_price = self.get_current_price(symbol)
+                if current_price <= 0:
+                    current_price = entry_price
+                current_value = qty * current_price
+                utilised_entry = qty * entry_price
+                utilisation += current_value
+                pnl = current_value - utilised_entry
+                pnl_pct = (pnl / utilised_entry * 100) if utilised_entry else 0.0
+                holdings_details.append({
+                    'symbol': symbol,
+                    'qty': qty,
+                    'entry': entry_price,
+                    'current': current_price,
+                    'value': current_value,
+                    'pnl': pnl,
+                    'pnl_pct': pnl_pct,
+                })
+
+            total_value = self.available_capital + utilisation
+            total_pnl = total_value - self.initial_capital
+            total_pnl_pct = (total_pnl / self.initial_capital * 100) if self.initial_capital else 0.0
+
+            print(f"[$] Starting Capital: Rs.{self.initial_capital:,.0f}")
+            print(f"[CAPITAL] Available: Rs.{self.available_capital:,.0f} | Utilised: Rs.{utilisation:,.0f}")
+            print(f"[P&L] Mark-to-market: Rs.{total_pnl:,.0f} ({total_pnl_pct:+.2f}%)")
+
+            if holdings_details:
+                print("[HOLDINGS] Open Positions (qty | entry -> current | P&L)")
+                for detail in holdings_details:
+                    print(
+                        f"   {detail['symbol']:<12} | {int(detail['qty']):>4} | "
+                        f"Rs.{detail['entry']:>8.2f} → Rs.{detail['current']:>8.2f} | "
+                        f"Rs.{detail['pnl']:>8.0f} ({detail['pnl_pct']:+.2f}%)"
+                    )
+            else:
+                print("[HOLDINGS] No open positions")
+
+            if self.total_trades > 0:
+                win_rate = (self.winning_trades / self.total_trades * 100)
+                print(f"[STATS] Trades: {self.total_trades} | Win Rate: {win_rate:.1f}%")
+            else:
+                print("[STATS] No trades recorded yet")
+
+        except Exception as exc:
+            print(f"[SESSION] Unable to compute detailed metrics: {exc}")
+
+    def _find_latest_portfolio_snapshot(self) -> tuple[Path | None, dict | None]:
+        """Return path and contents of the freshest portfolio snapshot (main or backups)."""
+        candidates: list[tuple[Path, dict, datetime, float]] = []
+
+        def _load_snapshot_file(path: Path):
+            try:
+                payload = json.loads(path.read_text(encoding='utf-8'))
+            except Exception:
+                return
+            last_dt_raw = payload.get('last_trading_date')
+            last_dt = None
+            if last_dt_raw:
+                try:
+                    last_dt = datetime.fromisoformat(last_dt_raw)
+                except Exception:
+                    last_dt = None
+            if isinstance(last_dt, datetime):
+                if last_dt.tzinfo:
+                    last_dt = last_dt.astimezone(IST)
+                else:
+                    last_dt = last_dt.replace(tzinfo=IST)
+            else:
+                last_dt = datetime.min.replace(tzinfo=IST)
+            candidates.append((path, payload, last_dt, path.stat().st_mtime))
+
+        # Primary portfolio file
+        if self.portfolio_file.exists():
+            _load_snapshot_file(self.portfolio_file)
+
+        # Timestamped backups
+        backups_dir = Path('Reports Day Trading')
+        if backups_dir.exists():
+            for backup_path in backups_dir.glob('paper_trading_portfolio_*.json.bak'):
+                _load_snapshot_file(backup_path)
+
+        if not candidates:
+            return None, None
+
+        # Pick snapshot with latest trading date, breaking ties with file mtime
+        best_path, best_payload, _, _ = max(candidates, key=lambda item: (item[2], item[3]))
+        return best_path, best_payload
+
+    def _apply_portfolio_snapshot(self, payload: dict, label: str):
+        """Populate in-memory state from a persisted snapshot."""
+        self.initial_capital = payload.get('initial_capital', self.initial_capital)
+        self.capital = payload.get('capital', self.capital)
+        self.available_capital = payload.get('available_capital', self.available_capital)
+        self.positions = payload.get('positions', {}) or {}
+        self.trade_history = payload.get('trade_history', []) or []
+        self.total_trades = payload.get('total_trades', 0)
+        self.winning_trades = payload.get('winning_trades', 0)
+
+        last_dt_raw = payload.get('last_trading_date')
+        if last_dt_raw:
+            try:
+                last_dt = datetime.fromisoformat(last_dt_raw)
+                if last_dt.tzinfo:
+                    last_dt = last_dt.astimezone(IST)
+                else:
+                    last_dt = last_dt.replace(tzinfo=IST)
+                self.last_trading_date = last_dt.date()
+            except Exception:
+                pass
+
+        portfolio_value = payload.get('total_portfolio_value')
+        if portfolio_value is None:
+            portfolio_value = self.available_capital
+            for pos in self.positions.values():
+                qty = pos.get('shares') or pos.get('quantity') or pos.get('qty', 0)
+                avg_price = pos.get('avg_price') or pos.get('entry_price', 0)
+                if qty and avg_price:
+                    try:
+                        portfolio_value += float(qty) * float(avg_price)
+                    except Exception:
+                        continue
+
+        print(f"[PORTFOLIO] {label}: Rs.{portfolio_value:,.0f} | Positions: {len(self.positions)}")
+
     def _load_portfolio_state(self):
         """Load portfolio state from persistence files"""
         today = datetime.now(IST).date()
@@ -494,42 +989,25 @@ class PerfectTraderPaperTrading:
             print(f"[FRESH START] Ignoring existing portfolio data")
             return
         
-        # Check if we have a portfolio state file
-        if self.portfolio_file.exists():
-            try:
-                with open(self.portfolio_file, 'r') as f:
-                    data = json.load(f)
-                
-                last_date = datetime.fromisoformat(data['last_trading_date']).date()
-                
-                # Same day: restore exact state
-                if last_date < today:
-                    print(f"[NEW DAY] Carrying over previous portfolio state (positions, cash, history)")
-                    self.initial_capital = data['initial_capital']
-                    self.capital = data['capital']
-                    self.available_capital = data['available_capital']
-                    self.positions = data['positions']
-                    self.trade_history = data['trade_history']
-                    self.total_trades = data.get('total_trades', 0)
-                    self.winning_trades = data.get('winning_trades', 0)
-                    return
-                    for symbol, pos in self.positions.items():
-                        total_value += pos['shares'] * pos['avg_price']  # Approximate
-                    
-                    print(f"[PORTFOLIO] Total value: Rs.{total_value:,.0f}")
-                    print(f"[CASH] Available: Rs.{self.available_capital:,.0f}")
-                    print(f"[POSITIONS] Open: {len(self.positions)}")
-                    return
-                
-                # New day: carry forward positions and cash (no auto reset)
-                elif last_date < today:
-                    print(f"[NEW DAY] Carrying forward portfolio and positions from previous session")
-                    print(f"[BALANCE] Carried cash: Rs.{self.available_capital:,.0f} | Positions: {len(self.positions)}")
-                    return
-                    
-            except Exception as e:
-                print(f"[WARNING] Error loading portfolio state: {e}")
-                print("[RESET] Starting fresh with default capital")
+        snapshot_path, snapshot_payload = self._find_latest_portfolio_snapshot()
+        if not snapshot_payload:
+            print(f"[PORTFOLIO] No prior snapshot found - starting fresh")
+            return
+
+        try:
+            source = "primary snapshot" if snapshot_path == self.portfolio_file else f"backup ({snapshot_path.name})"
+            self._apply_portfolio_snapshot(snapshot_payload, f"Restored {source}")
+
+            # Ensure main portfolio file mirrors the restored snapshot for continuity
+            if snapshot_path != self.portfolio_file:
+                try:
+                    self.portfolio_file.write_text(json.dumps(snapshot_payload, indent=2), encoding='utf-8')
+                    print(f"[PORTFOLIO] Synced main snapshot from {snapshot_path.name}")
+                except Exception as exc:
+                    print(f"[PORTFOLIO] Warning: could not sync main snapshot: {exc}")
+        except Exception as e:
+            print(f"[WARNING] Error loading portfolio state: {e}")
+            print("[RESET] Starting fresh with default capital")
     
     def _save_portfolio_state(self, is_end_of_day=False):
         """Save current portfolio state for persistence"""
@@ -1107,23 +1585,8 @@ class PerfectTraderPaperTrading:
             self._print_opening_summary()
         except Exception:
             pass
-        
-        # Calculate current portfolio value
-        total_value = self.available_capital
-        for symbol, position in self.positions.items():
-            # Use entry_price if avg_price not available (backward compatibility)
-            price = position.get('avg_price', position.get('entry_price', 0))
-            total_value += position['shares'] * price
-        
-        print(f"[$] Starting Capital: Rs.{self.initial_capital:,.0f}")
-        if total_value != self.initial_capital:
-            print(f"[$] Current Portfolio: Rs.{total_value:,.0f} ({((total_value-self.initial_capital)/self.initial_capital*100):+.1f}%)")
-            print(f"[CASH] Available Cash: Rs.{self.available_capital:,.0f}")
-        if self.positions:
-            print(f"[POS] Open Positions: {len(self.positions)}")
-        if self.total_trades > 0:
-            win_rate = (self.winning_trades / self.total_trades * 100)
-            print(f"[STATS] Total Trades: {self.total_trades} | Win Rate: {win_rate:.1f}%")
+
+        self._print_session_metrics()
         
         print(f"[#] Total Stocks: {len(self.watchlist)} (Large+Mid+Small Cap)")
         print(f"[~] Scans: All {len(self.watchlist)} stocks per cycle")
@@ -1258,17 +1721,37 @@ class PerfectTraderPaperTrading:
         print("[DONE] SESSION COMPLETE")
         print("=" * 50)
         self.print_status()
+        self._report_data_gaps()
         
         if self.trade_history:
             print(f"\n[PERFORMANCE] RESULTS:")
             avg_return = np.mean([t['pnl_pct'] for t in self.trade_history])
             print(f"   Average Trade: {avg_return:+.2f}%")
+            win_rate = (self.winning_trades / self.total_trades * 100) if self.total_trades else 0
             
             if len(self.trade_history) >= 5:
                 if win_rate >= 60 and avg_return > 0:
                     print(f"   ✅ Good performance! Consider live testing.")
                 else:
                     print(f"   [WARNING] Review strategy before live trading.")
+
+    def _report_data_gaps(self):
+        """Report any symbols that were skipped due to insufficient historical data."""
+        try:
+            if not self.strategy:
+                return
+            limited = getattr(self.strategy, '_insufficient_logged', set()) or set()
+            if not limited:
+                return
+            print("\n[DATA] Symbols skipped because of limited history:")
+            limited_list = sorted(limited)
+            for i in range(0, len(limited_list), 10):
+                chunk = limited_list[i:i+10]
+                print(f"   {', '.join(chunk)}")
+            print("   ⚠️  These scripts are newly listed or lack multi-timeframe data.")
+            print("   💡 Re-run tomorrow after fresh data downloads, or remove them from the watchlist.")
+        except Exception:
+            pass
 
     def _print_opening_summary(self):
         """Print past-day capital balance and holdings before the first scan.
@@ -1342,28 +1825,52 @@ def auto_update_data():
             symbols = ['RELIANCE', 'TCS', 'HDFCBANK']  # Fallback
         
         print(f"[AUTO] Checking data freshness for {len(symbols)} stocks...")
-        
-        # Check how many stocks need updates
-        stale_symbols = []
+        required_timeframes = {
+            'daily': {'min_rows': 120, 'check_fresh': False},
+            '60min': {'min_rows': 160, 'check_fresh': False},
+            '15min': {'min_rows': 200, 'check_fresh': True},
+        }
+
+        to_refresh = {tf: [] for tf in required_timeframes}
+
         for symbol in symbols:
-            if not cache_mgr.is_cache_valid(symbol, '15min'):
-                stale_symbols.append(symbol)
-        
-        if stale_symbols:
-            print(f"[AUTO] Found {len(stale_symbols)} stocks with stale data")
-            print(f"[AUTO] Updating: {', '.join(stale_symbols[:5])}{'...' if len(stale_symbols) > 5 else ''}")
-            
-            # Update only stale data
-            for symbol in stale_symbols:
+            for tf, rules in required_timeframes.items():
+                meta = cache_mgr.metadata.get(f"{symbol}_{tf}", {})
+                rows = int(meta.get('rows', 0) or 0)
+                cache_file = cache_mgr.get_cache_path(symbol, tf)
+                needs_update = False
+
+                if not cache_file.exists() or rows < rules['min_rows']:
+                    needs_update = True
+                elif rules['check_fresh'] and not cache_mgr.is_cache_valid(symbol, tf):
+                    needs_update = True
+
+                if needs_update:
+                    to_refresh[tf].append(symbol)
+
+        refreshed_any = False
+        for tf in ['daily', '60min', '15min']:
+            symbols_needed = to_refresh.get(tf, [])
+            if not symbols_needed:
+                continue
+
+            refreshed_any = True
+            preview = ', '.join(symbols_needed[:5])
+            suffix = '...' if len(symbols_needed) > 5 else ''
+            print(f"[AUTO] Refreshing {tf} data for {len(symbols_needed)} symbols: {preview}{suffix}")
+
+            for symbol in symbols_needed:
                 try:
-                    print(f"[AUTO] Updating {symbol}...")
-                    cache_mgr.download_historical_data(symbol, '15min', force_download=True)
+                    cache_mgr.download_historical_data(symbol, tf, force_download=True)
+                    # Light rate limit to respect API caps
+                    time.sleep(0.35)
                 except Exception as e:
-                    print(f"[AUTO] [WARNING] Failed to update {symbol}: {e}")
-                    
-            print(f"[AUTO] [SUCCESS] Data update completed!")
+                    print(f"[AUTO] [WARNING] Failed to update {symbol} ({tf}): {e}")
+
+        if not refreshed_any:
+            print(f"[AUTO] [OK] All required timeframes look good")
         else:
-            print(f"[AUTO] [OK] All data is fresh - no updates needed")
+            print(f"[AUTO] [SUCCESS] Data update completed!")
             
         return True
         
@@ -1392,12 +1899,11 @@ def auto_authenticate_zerodha():
                     profile = kite.profile()
                     print(f"[AUTH] [SUCCESS] Session active for: {profile.get('user_name', 'Unknown')}")
                     return True
-                except:
+                except Exception:
                     print(f"[AUTH] [WARNING] Saved session expired")
             
         print(f"[AUTH] [INFO] Authentication required")
         print(f"[AUTH] [TIP] Run: python authenticate_zerodha.py")
-        print(f"[AUTH] Continuing with cached data only...")
         return False
         
     except Exception as e:
@@ -1433,10 +1939,19 @@ def main():
 
     # Step 1: Auto-authenticate Zerodha session
     auth_success = auto_authenticate_zerodha()
-    
-    # Step 2: Auto-update data (only if authenticated or use cache)
-    data_success = auto_update_data()
-    
+
+    if not auth_success and not dry_run:
+        print("\n[TRADING] Cannot continue without an active Zerodha session.")
+        print("[ACTION] Run: python authenticate_zerodha.py")
+        return
+
+    # Step 2: Auto-update data (only if authenticated)
+    data_success = False
+    if auth_success:
+        data_success = auto_update_data()
+    else:
+        print("[DATA] Skipping automatic data update because Zerodha is not authenticated.")
+
     # Step 3: Start paper trading
     print("\n" + "=" * 60)
     print("[TRADING] STARTING PAPER TRADING ENGINE")
@@ -1450,14 +1965,19 @@ def main():
         use_live = False
     
     # Initialize engine
-    engine = PerfectTraderPaperTrading(
-        initial_capital=250000,
-        use_live_data=use_live,
-        force_fresh_start=False,  # Don't reset portfolio every time
-        dry_run=dry_run,
-        allow_after_hours=allow_after_hours
-    )
-    
+    try:
+        engine = PerfectTraderPaperTrading(
+            initial_capital=250000,
+            use_live_data=use_live,
+            force_fresh_start=False,  # Don't reset portfolio every time
+            dry_run=dry_run,
+            allow_after_hours=allow_after_hours
+        )
+    except ZerodhaAuthenticationError:
+        print("\n[TRADING] Aborting start until authentication is completed.")
+        print("[ACTION] Run: python authenticate_zerodha.py")
+        return
+
     # Start trading
     engine.run(hours=run_hours)
 
